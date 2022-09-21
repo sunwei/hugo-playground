@@ -1,0 +1,192 @@
+package codeblocks
+
+import (
+	"bytes"
+	"fmt"
+	"github.com/alecthomas/chroma/v2/lexers"
+	htext "github.com/sunwei/hugo-playground/common/text"
+	"github.com/sunwei/hugo-playground/markup/converter/hooks"
+	"github.com/sunwei/hugo-playground/markup/goldmark/internal/render"
+	"github.com/sunwei/hugo-playground/markup/internal/attributes"
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/ast"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer"
+	"github.com/yuin/goldmark/text"
+	"github.com/yuin/goldmark/util"
+	"sync"
+)
+
+func New() goldmark.Extender {
+	return &codeBlocksExtension{}
+}
+
+type (
+	codeBlocksExtension struct{}
+	htmlRenderer        struct{}
+)
+
+func (e *codeBlocksExtension) Extend(m goldmark.Markdown) {
+	fmt.Println("which one ...")
+	m.Parser().AddOptions(
+		parser.WithASTTransformers(
+			util.Prioritized(&Transformer{}, 100),
+		),
+	)
+	m.Renderer().AddOptions(renderer.WithNodeRenderers(
+		util.Prioritized(newHTMLRenderer(), 100),
+	))
+}
+
+func newHTMLRenderer() renderer.NodeRenderer {
+	r := &htmlRenderer{}
+	return r
+}
+
+// KindCodeBlock Kind is the kind of an Hugo code block.
+var KindCodeBlock = ast.NewNodeKind("HugoCodeBlock")
+
+func (r *htmlRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
+	reg.Register(KindCodeBlock, r.renderCodeBlock)
+}
+
+func (r *htmlRenderer) renderCodeBlock(w util.BufWriter, src []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
+	ctx := w.(*render.Context)
+
+	if entering {
+		return ast.WalkContinue, nil
+	}
+
+	n := node.(*codeBlock)
+	lang := string(n.b.Language(src))
+	renderer := ctx.RenderContext().GetRenderer(hooks.CodeBlockRendererType, lang)
+	if renderer == nil {
+		return ast.WalkStop, fmt.Errorf("no code renderer found for %q", lang)
+	}
+
+	ordinal := n.ordinal
+
+	var buff bytes.Buffer
+
+	l := n.b.Lines().Len()
+	for i := 0; i < l; i++ {
+		line := n.b.Lines().At(i)
+		buff.Write(line.Value(src))
+	}
+
+	s := htext.Chomp(buff.String())
+
+	var info []byte
+	if n.b.Info != nil {
+		info = n.b.Info.Segment.Value(src)
+	}
+
+	attrtp := attributes.AttributesOwnerCodeBlockCustom
+	if isd, ok := renderer.(hooks.IsDefaultCodeBlockRendererProvider); (ok && isd.IsDefaultCodeBlockRenderer()) || lexers.Get(lang) != nil {
+		// We say that this is a Chroma code block if it's the default code block renderer
+		// or if the language is supported by Chroma.
+		attrtp = attributes.AttributesOwnerCodeBlockChroma
+	}
+
+	// IsDefaultCodeBlockRendererProvider
+	attrs := getAttributes(n.b, info)
+	cbctx := &codeBlockContext{
+		page:             ctx.DocumentContext().Document,
+		lang:             lang,
+		code:             s,
+		ordinal:          ordinal,
+		AttributesHolder: attributes.New(attrs, attrtp),
+	}
+
+	cbctx.createPos = func() htext.Position {
+		if resolver, ok := renderer.(hooks.ElementPositionResolver); ok {
+			return resolver.ResolvePosition(cbctx)
+		}
+		return htext.Position{
+			Filename:     ctx.DocumentContext().Filename,
+			LineNumber:   1,
+			ColumnNumber: 1,
+		}
+	}
+
+	cr := renderer.(hooks.CodeBlockRenderer)
+
+	err := cr.RenderCodeblock(
+		w,
+		cbctx,
+	)
+
+	ctx.AddIdentity(cr)
+
+	if err != nil {
+		return ast.WalkContinue, err
+	}
+
+	return ast.WalkContinue, nil
+}
+
+func getAttributes(node *ast.FencedCodeBlock, infostr []byte) []ast.Attribute {
+	if node.Attributes() != nil {
+		return node.Attributes()
+	}
+	if infostr != nil {
+		attrStartIdx := -1
+
+		for idx, char := range infostr {
+			if char == '{' {
+				attrStartIdx = idx
+				break
+			}
+		}
+
+		if attrStartIdx > 0 {
+			n := ast.NewTextBlock() // dummy node for storing attributes
+			attrStr := infostr[attrStartIdx:]
+			if attrs, hasAttr := parser.ParseAttributes(text.NewReader(attrStr)); hasAttr {
+				for _, attr := range attrs {
+					n.SetAttribute(attr.Name, attr.Value)
+				}
+				return n.Attributes()
+			}
+		}
+	}
+	return nil
+}
+
+type codeBlockContext struct {
+	page    any
+	lang    string
+	code    string
+	ordinal int
+
+	// This is only used in error situations and is expensive to create,
+	// to deleay creation until needed.
+	pos       htext.Position
+	posInit   sync.Once
+	createPos func() htext.Position
+
+	*attributes.AttributesHolder
+}
+
+func (c *codeBlockContext) Page() any {
+	return c.page
+}
+
+func (c *codeBlockContext) Type() string {
+	return c.lang
+}
+
+func (c *codeBlockContext) Inner() string {
+	return c.code
+}
+
+func (c *codeBlockContext) Ordinal() int {
+	return c.ordinal
+}
+
+func (c *codeBlockContext) Position() htext.Position {
+	c.posInit.Do(func() {
+		c.pos = c.createPos()
+	})
+	return c.pos
+}
