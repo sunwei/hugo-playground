@@ -11,6 +11,7 @@ import (
 	"github.com/sunwei/hugo-playground/hugofs"
 	"github.com/sunwei/hugo-playground/hugofs/glob"
 	"github.com/sunwei/hugo-playground/lazy"
+	"github.com/sunwei/hugo-playground/log"
 	"github.com/sunwei/hugo-playground/output"
 	"github.com/sunwei/hugo-playground/parser/metadecoders"
 	"github.com/sunwei/hugo-playground/publisher"
@@ -70,6 +71,7 @@ func NewHugoSites(cfg deps.DepsCfg) (*HugoSites, error) {
 }
 
 func createSitesFromConfig(cfg deps.DepsCfg) ([]*Site, error) {
+	log.Process("createSitesFromConfig", "start")
 	var sites []*Site
 
 	// [en]
@@ -78,6 +80,7 @@ func createSitesFromConfig(cfg deps.DepsCfg) ([]*Site, error) {
 		var s *Site
 		var err error
 		cfg.Language = lang
+		log.Process("newSite", "create site with DepsCfg with language setup")
 		s, err = newSite(cfg)
 
 		if err != nil {
@@ -87,6 +90,7 @@ func createSitesFromConfig(cfg deps.DepsCfg) ([]*Site, error) {
 		sites = append(sites, s)
 	}
 
+	log.Process("createSitesFromConfig", "end")
 	return sites, nil
 }
 

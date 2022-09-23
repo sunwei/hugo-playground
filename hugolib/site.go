@@ -12,6 +12,7 @@ import (
 	"github.com/sunwei/hugo-playground/identity"
 	"github.com/sunwei/hugo-playground/langs"
 	"github.com/sunwei/hugo-playground/lazy"
+	"github.com/sunwei/hugo-playground/log"
 	"github.com/sunwei/hugo-playground/markup/converter"
 	"github.com/sunwei/hugo-playground/media"
 	"github.com/sunwei/hugo-playground/output"
@@ -128,12 +129,14 @@ func newSite(cfg deps.DepsCfg) (*Site, error) {
 	)
 
 	// [{toml}, {html}, {markdown}, {plain}]
+	log.Process("media.DecodeTypes", "set default media types")
 	siteMediaTypesConfig, err = media.DecodeTypes(mediaTypesConfig...)
 	if err != nil {
 		return nil, err
 	}
 
 	// [{HTML}, {JSON}, {MARKDOWN}]
+	log.Process("output.DecodeFormats", "set default output formats based on media types, and customized output formats configuration")
 	siteOutputFormatsConfig, err = output.DecodeFormats(siteMediaTypesConfig, outputFormatsConfig...)
 
 	if err != nil {
@@ -141,6 +144,7 @@ func newSite(cfg deps.DepsCfg) (*Site, error) {
 	}
 
 	// Site output formats source
+	log.Process("site output formats", "map siteOutputFormats to every hugo page types(KindPage, KindHome...)")
 	outputFormats, err := createSiteOutputFormats(siteOutputFormatsConfig, nil, true)
 
 	if err != nil {
