@@ -2,7 +2,6 @@ package goldmark
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/sunwei/hugo-playground/markup/tableofcontents"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
@@ -30,7 +29,6 @@ type tocExtension struct {
 func (e *tocExtension) Extend(m goldmark.Markdown) {
 	r := goldmark.DefaultRenderer()
 	r.AddOptions(e.options...)
-	fmt.Println("which transformers...")
 	m.Parser().AddOptions(parser.WithASTTransformers(util.Prioritized(&tocTransformer{
 		r: r,
 	}, 10)))

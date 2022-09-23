@@ -98,10 +98,6 @@ func parseSection(r io.Reader, cfg Config, start stateFunc) (Result, error) {
 		return nil, fmt.Errorf("failed to read page content: %w", err)
 	}
 
-	fmt.Println("parse section...")
-	fmt.Println(string(b))
-	fmt.Println("--ps--")
-
 	return parseBytes(b, cfg, start)
 }
 

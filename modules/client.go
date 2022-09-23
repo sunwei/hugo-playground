@@ -92,11 +92,6 @@ func (h *Client) Collect() (ModulesConfig, error) {
 		}
 	}
 
-	fmt.Println("collect done 222...")
-	for _, m := range mc.ActiveModules {
-		fmt.Println(len(m.Mounts()))
-	}
-
 	if err := (&mc).finalize(); err != nil {
 		return mc, err
 	}

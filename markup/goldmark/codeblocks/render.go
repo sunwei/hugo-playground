@@ -27,7 +27,6 @@ type (
 )
 
 func (e *codeBlocksExtension) Extend(m goldmark.Markdown) {
-	fmt.Println("which one ...")
 	m.Parser().AddOptions(
 		parser.WithASTTransformers(
 			util.Prioritized(&Transformer{}, 100),

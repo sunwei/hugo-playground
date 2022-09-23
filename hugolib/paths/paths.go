@@ -110,10 +110,6 @@ func New(fs *hugofs.Fs, cfg config.Provider) (*Paths, error) {
 		p.AllModules = cfg.Get("allModules").(modules.Modules)
 	}
 
-	fmt.Println("===> new path")
-	fmt.Printf("%#v", p)
-	fmt.Println("")
-	
 	return p, nil
 }
 

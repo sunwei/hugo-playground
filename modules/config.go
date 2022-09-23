@@ -5,6 +5,7 @@ import (
 	"github.com/sunwei/hugo-playground/config"
 	"github.com/sunwei/hugo-playground/hugofs/files"
 	"github.com/sunwei/hugo-playground/langs"
+	"github.com/sunwei/hugo-playground/log"
 	"strings"
 )
 
@@ -57,6 +58,7 @@ func decodeConfig(cfg config.Provider) (Config, error) {
 
 	if themeSet {
 		// [mytheme]
+		log.Process("decodeConfig", "set mytheme as Imports in DefaultModuleConfig, Config{}")
 		imports := config.GetStringSlicePreserveString(cfg, "theme")
 		for _, imp := range imports {
 			c.Imports = append(c.Imports, Import{

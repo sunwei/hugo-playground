@@ -71,9 +71,6 @@ func (f *Filesystem) captureFiles() error {
 }
 
 func (f *Filesystem) shouldRead(filename string, fi hugofs.FileMetaInfo) (bool, error) {
-	fmt.Println("file system should read")
-	fmt.Println(fi.Meta().Filename)
-	fmt.Printf("==")
 	ignore := f.SourceSpec.IgnoreFile(fi.Meta().Filename)
 
 	if fi.IsDir() {

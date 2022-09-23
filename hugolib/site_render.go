@@ -52,14 +52,11 @@ func (s *Site) renderPages(ctx *siteRenderContext) error {
 		return false
 	})
 
-	fmt.Println("close pages...")
 	close(pages)
 
 	wg.Wait()
 
-	fmt.Println("wait nothing...")
 	close(results)
-	fmt.Println("result closed...")
 
 	err := <-errs
 	if err != nil {
@@ -100,7 +97,6 @@ func pageRenderer(
 			panic("render paginator is not ready")
 		}
 	}
-	fmt.Println("render page done...")
 }
 
 func (s *Site) render404() error {

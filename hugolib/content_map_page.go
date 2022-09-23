@@ -138,9 +138,6 @@ func (m *pageMap) assemblePages() error {
 		var parentBucket *pagesMapBucket
 
 		_, parent = m.getSection(s)
-		fmt.Println("get section parent:")
-		fmt.Println(parent)
-		fmt.Println("~~~")
 
 		if parent == nil {
 			panic(fmt.Sprintf("BUG: parent not set for %q", s))
@@ -175,10 +172,6 @@ func (m *pageMap) assembleSections() error {
 	var err error
 
 	m.sections.Walk(func(s string, v any) bool {
-		fmt.Println("assemble sections walk")
-		fmt.Println(s)
-		fmt.Println("+++")
-
 		n := v.(*contentNode)
 		var shouldBuild bool
 
@@ -192,10 +185,6 @@ func (m *pageMap) assembleSections() error {
 		}()
 
 		sections := m.splitKey(s)
-		fmt.Println("assemble sections sections:")
-		fmt.Println(sections)
-		fmt.Printf("%#v\n", n.p)
-		fmt.Println("___")
 
 		if n.p != nil {
 			if n.p.IsHome() {

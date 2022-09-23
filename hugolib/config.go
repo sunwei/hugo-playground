@@ -7,6 +7,7 @@ import (
 	cpaths "github.com/sunwei/hugo-playground/common/paths"
 	"github.com/sunwei/hugo-playground/config"
 	"github.com/sunwei/hugo-playground/langs"
+	"github.com/sunwei/hugo-playground/log"
 	"github.com/sunwei/hugo-playground/modules"
 	"path/filepath"
 )
@@ -37,11 +38,13 @@ func (l configLoader) loadConfig(configName string) (string, error) {
 	baseDir := l.configFileDir()
 	filename := filepath.Join(baseDir, configName)
 
+	log.Process("loadConfig", "load config.toml from hard disk")
 	m, err := config.FromFileToMap(l.Fs, filename)
 	if err != nil {
 		return filename, err
 	}
 
+	log.Process("loadConfig", "set loaded config map to configLoader.cfg with key ''")
 	// Set overwrites keys of the same name, recursively.
 	l.cfg.Set("", m)
 
@@ -134,6 +137,7 @@ func (l configLoader) collectModules(modConfig modules.Config, v1 config.Provide
 	moduleConfig, err := modulesClient.Collect()
 
 	// Avoid recreating these later.
+	log.Process("collectModules", "set active modules to config with key 'allModules'")
 	v1.Set("allModules", moduleConfig.ActiveModules)
 
 	if moduleConfig.GoModulesFilename != "" {
@@ -150,6 +154,7 @@ func (l configLoader) collectModules(modConfig modules.Config, v1 config.Provide
 func LoadConfig(d ConfigSourceDescriptor) (config.Provider, []string, error) {
 	var configFiles []string
 	l := configLoader{ConfigSourceDescriptor: d, cfg: config.New()}
+	log.Process("LoadConfig", "init configLoader")
 	filename, err := l.loadConfig(d.Filename)
 	if err == nil {
 		configFiles = append(configFiles, filename)
@@ -157,32 +162,29 @@ func LoadConfig(d ConfigSourceDescriptor) (config.Provider, []string, error) {
 		return nil, nil, err
 	}
 
+	log.Process("LoadConfig", "apply config defaults")
 	if err := l.applyConfigDefaults(); err != nil {
 		return l.cfg, configFiles, err
 	}
 
+	log.Process("LoadConfig", "load modules config")
 	modulesConfig, err := l.loadModulesConfig()
 	if err != nil {
 		fmt.Println("load modules config err...")
 		return l.cfg, configFiles, err
 	}
-	fmt.Println("LoadConfig: modulesConfig >>>")
-	fmt.Printf("%#v", modulesConfig)
 
 	// Need to run these after the modules are loaded, but before
 	// they are finalized.
 	collectHook := func(m *modules.ModulesConfig) error {
 		mods := m.ActiveModules
-
-		//cfg.Set("languagesSorted", c.Languages)                    // ["en"]
-		//cfg.Set("languagesSortedDefaultFirst", sortedDefaultFirst) // ["en"]
-		//cfg.Set("multilingual", len(languages2) > 1)               // false
 		if err := l.loadLanguageSettings(nil); err != nil {
 			return err
 		}
 
 		// Apply default project mounts.
 		// Default folder structure for hugo project
+		log.Process("collectHook", "apply default mounts to project module")
 		if err := modules.ApplyProjectConfigDefaults(l.cfg, mods[0]); err != nil {
 			return err
 		}
@@ -190,6 +192,7 @@ func LoadConfig(d ConfigSourceDescriptor) (config.Provider, []string, error) {
 		return nil
 	}
 
+	log.Process("LoadConfig", "collect modules with modulesConfig")
 	_, modulesConfigFiles, modulesCollectErr := l.collectModules(modulesConfig, l.cfg, collectHook)
 	if modulesCollectErr != nil {
 		return l.cfg, configFiles, modulesCollectErr

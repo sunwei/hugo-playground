@@ -1,7 +1,6 @@
 package hugolib
 
 import (
-	"fmt"
 	"github.com/sunwei/hugo-playground/output"
 	"github.com/sunwei/hugo-playground/resources/page/pagemeta"
 )
@@ -66,9 +65,6 @@ func (h *HugoSites) render(config *BuildCfg) error {
 	for _, s := range h.Sites {
 		h.renderFormats = append(h.renderFormats, s.renderFormats...)
 	}
-
-	fmt.Println("render formats all:")
-	fmt.Println(h.renderFormats) // HTML
 
 	i := 0
 	for _, s := range h.Sites {

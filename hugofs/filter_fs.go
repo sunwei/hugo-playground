@@ -14,7 +14,6 @@
 package hugofs
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -133,7 +132,6 @@ func (fs *FilterFs) UnwrapFilesystem() afero.Fs {
 }
 
 func (fs *FilterFs) LstatIfPossible(name string) (os.FileInfo, bool, error) {
-	fmt.Println("FilterFs 123...")
 	fi, b, err := lstatIfPossible(fs.fs, name)
 	if err != nil {
 		return nil, false, err
@@ -307,7 +305,6 @@ func printFs(fs afero.Fs, path string, w io.Writer) {
 		return
 	}
 	afero.Walk(fs, path, func(path string, info os.FileInfo, err error) error {
-		fmt.Println("p:::", path)
 		return nil
 	})
 }

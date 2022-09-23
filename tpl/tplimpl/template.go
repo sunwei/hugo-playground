@@ -145,8 +145,6 @@ func (t *templateHandler) loadEmbedded() error {
 		templ := string(bytes.ReplaceAll(templb, []byte("\r\n"), []byte("\n")))
 		name := strings.TrimPrefix(filepath.ToSlash(path), "embedded/templates/")
 		templateName := name
-		fmt.Println("templateHandler templatename:")
-		fmt.Println(templateName)
 
 		// For the render hooks and the server templates it does not make sense to preseve the
 		// double _indternal double book-keeping,
@@ -311,7 +309,6 @@ func unwrap(templ tpl.Template) tpl.Template {
 
 func (t *templateHandler) loadTemplates() error {
 	walker := func(path string, fi hugofs.FileMetaInfo, err error) error {
-		fmt.Println("walker...???")
 		if err != nil || fi.IsDir() {
 			fmt.Println("walker err 1")
 			return err
@@ -330,8 +327,6 @@ func (t *templateHandler) loadTemplates() error {
 			name = textTmplNamePrefix + name
 		}
 
-		fmt.Println("load templates...")
-		fmt.Println(name)
 		if err := t.addTemplateFile(name, path); err != nil {
 			return err
 		}
@@ -437,7 +432,6 @@ func (t *templateExec) ExecuteWithContext(ctx context.Context, templ tpl.Templat
 		defer rlocker.RUnlock()
 	}
 
-	fmt.Println("real execute with context...")
 	execErr := t.executor.ExecuteWithContext(ctx, templ, wr, data)
 	if execErr != nil {
 		fmt.Println("ExecuteWithContext error happens ...")
@@ -455,10 +449,6 @@ func (t *templateHandler) addFileContext(templ tpl.Template, inerr error) error 
 	if !ok {
 		return inerr
 	}
-
-	identifiers := t.extractIdentifiers(inerr.Error())
-	fmt.Println("addFileContext:")
-	fmt.Println(identifiers)
 
 	//lint:ignore ST1008 the error is the main result
 	checkFilename := func(info templateInfo, inErr error) (error, bool) {
@@ -508,8 +498,6 @@ func (t *templateHandler) findLayout(d output.LayoutDescriptor, f output.Format)
 	for _, name := range layouts {
 		templ, found := t.main.Lookup(name)
 		if found {
-			fmt.Println("main lookup found...")
-			fmt.Println(name)
 			return templ, true, nil
 		}
 	}

@@ -157,7 +157,6 @@ func (fs *baseFileDecoratorFs) LstatIfPossible(name string) (os.FileInfo, bool, 
 		ok  bool
 	)
 
-	fmt.Println("baseFileDecoratorFs 123...")
 	if lstater, isLstater := fs.Fs.(afero.Lstater); isLstater {
 		fi, ok, err = lstater.LstatIfPossible(name)
 	} else {

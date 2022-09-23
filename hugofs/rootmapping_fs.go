@@ -46,13 +46,11 @@ func NewRootMappingFs(fs afero.Fs, rms ...RootMapping) (*RootMappingFs, error) {
 
 		fi, err := fs.Stat(rm.To)
 		if err != nil {
-			fmt.Println("rm.to not exist: ", rm.To)
 			if os.IsNotExist(err) {
 				continue
 			}
 			return nil, err
 		}
-		fmt.Println("rm.to do exist: ", rm.To)
 		// Extract "blog" from "content/blog"
 		rm.path = strings.TrimPrefix(strings.TrimPrefix(rm.From, fromBase), filepathSeparator)
 		if rm.Meta == nil {
@@ -83,16 +81,11 @@ func NewRootMappingFs(fs afero.Fs, rms ...RootMapping) (*RootMappingFs, error) {
 		}
 		mappings = append(mappings, rm)
 		rootMapToReal.Insert(key, mappings)
-		fmt.Println("=== root map insert key")
-		fmt.Println(key)
-		fmt.Println(mappings)
 
 		virtualRoots = append(virtualRoots, rm)
 	}
 
 	rootMapToReal.Insert(filepathSeparator, virtualRoots)
-	fmt.Println("=== root map insert root")
-	fmt.Println(virtualRoots)
 
 	rfs := &RootMappingFs{
 		Fs:            fs,
@@ -173,11 +166,6 @@ func (fs *RootMappingFs) Dirs(base string) ([]FileMetaInfo, error) {
 	base = filepathSeparator + fs.cleanName(base)
 	roots := fs.getRootsWithPrefix(base)
 
-	fmt.Println("dirs...")
-	fmt.Println(base)
-	fmt.Println(roots)
-	fmt.Println("---==-==")
-
 	if roots == nil {
 		return nil, nil
 	}
@@ -243,7 +231,6 @@ func (fs RootMappingFs) Filter(f func(m RootMapping) bool) *RootMappingFs {
 
 // LstatIfPossible returns the os.FileInfo structure describing a given file.
 func (fs *RootMappingFs) LstatIfPossible(name string) (os.FileInfo, bool, error) {
-	fmt.Println("RootMappingFs 123...")
 	fis, err := fs.doLstat(name)
 	if err != nil {
 		return nil, false, err
@@ -296,7 +283,6 @@ func (fs *RootMappingFs) getRoots(key string) (string, []RootMapping) {
 }
 
 func (fs *RootMappingFs) debug() {
-	fmt.Println("debug():")
 	fs.rootMapToReal.Walk(func(s string, v any) bool {
 		fmt.Println("Key", s)
 		return false

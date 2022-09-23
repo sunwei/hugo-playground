@@ -2,7 +2,6 @@ package goldmark
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/sunwei/hugo-playground/identity"
 	"github.com/sunwei/hugo-playground/markup/converter"
 	"github.com/sunwei/hugo-playground/markup/goldmark/codeblocks"
@@ -141,17 +140,11 @@ func (c *goldmarkConverter) Convert(ctx converter.RenderContext) (result convert
 	result = buf
 	pctx := c.newParserContext(ctx)
 	reader := text.NewReader(ctx.Src)
-	fmt.Printf("??!!!???")
-	fmt.Println(string(ctx.Src[:]))
-	fmt.Println("--==--")
 
 	doc := c.md.Parser().Parse(
 		reader,
 		parser.WithContext(pctx),
 	)
-	fmt.Println("!!!@#$$%")
-	fmt.Println(doc)
-	fmt.Println("000099973264")
 
 	rcx := &render.RenderContextDataHolder{
 		Rctx: ctx,

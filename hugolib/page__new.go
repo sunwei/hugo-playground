@@ -1,7 +1,6 @@
 package hugolib
 
 import (
-	"fmt"
 	"github.com/sunwei/hugo-playground/lazy"
 	"github.com/sunwei/hugo-playground/output"
 	"github.com/sunwei/hugo-playground/resources/page"
@@ -66,10 +65,6 @@ func newPageFromMeta(
 	}
 
 	if meta != nil || parentBucket != nil {
-		fmt.Println("set metadata 888")
-		fmt.Println(meta)
-		fmt.Println(bucket)
-		fmt.Println("___")
 		if err := metaProvider.setMetadata(bucket, ps, meta); err != nil {
 			return nil, err
 		}

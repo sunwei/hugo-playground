@@ -15,7 +15,6 @@ package hugofs
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -74,7 +73,6 @@ func (fs *noSymlinkFs) UnwrapFilesystem() afero.Fs {
 }
 
 func (fs *noSymlinkFs) LstatIfPossible(name string) (os.FileInfo, bool, error) {
-	fmt.Println("noSymlinkFs 123...")
 	return fs.stat(name)
 }
 

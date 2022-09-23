@@ -133,18 +133,10 @@ func (w *Walkway) Walk() error {
 
 // if the filesystem supports it, use Lstat, else use fs.Stat
 func lstatIfPossible(fs afero.Fs, path string) (os.FileInfo, bool, error) {
-	fmt.Println("9090901")
-	fmt.Println(fs.Name())
 	if lfs, ok := fs.(afero.Lstater); ok {
-		fmt.Println("9090902")
-		fmt.Println(path)
-		fmt.Printf("%v", lfs)
-		fmt.Println("2233")
 		fi, b, err := lfs.LstatIfPossible(path)
 		return fi, b, err
 	}
-	fmt.Println("909090")
-	fmt.Println(path)
 	fi, err := fs.Stat(path)
 	return fi, false, err
 }

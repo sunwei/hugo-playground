@@ -14,7 +14,6 @@
 package hugofs
 
 import (
-	"fmt"
 	"os"
 	"strings"
 	"syscall"
@@ -49,7 +48,6 @@ func (fs *filenameFilterFs) UnwrapFilesystem() afero.Fs {
 }
 
 func (fs *filenameFilterFs) LstatIfPossible(name string) (os.FileInfo, bool, error) {
-	fmt.Println("filenameFilterFs 123...")
 	fi, b, err := fs.fs.(afero.Lstater).LstatIfPossible(name)
 	if err != nil {
 		return nil, false, err

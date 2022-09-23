@@ -75,7 +75,6 @@ func (fs *SliceFs) Chown(n string, uid, gid int) error {
 }
 
 func (fs *SliceFs) LstatIfPossible(name string) (os.FileInfo, bool, error) {
-	fmt.Println("SliceFs 123...")
 	fi, _, err := fs.pickFirst(name)
 	if err != nil {
 		return nil, false, err

@@ -18,11 +18,9 @@ import (
 func SymbolicWalk(fs afero.Fs, root string, walker hugofs.WalkFunc) error {
 	if _, isOs := fs.(*afero.OsFs); isOs {
 		// Mainly to track symlinks.
-		fmt.Println("is os fs...")
 		fs = hugofs.NewBaseFileDecorator(fs)
 	}
 
-	fmt.Println("okokok...")
 	w := hugofs.NewWalkway(hugofs.WalkwayConfig{
 		Fs:     fs,
 		Root:   root,

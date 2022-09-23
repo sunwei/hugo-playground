@@ -73,8 +73,6 @@ func (t *executer) ExecuteWithContext(ctx context.Context, p Preparer, wr io.Wri
 
 	t.helper.Init(ctx, p)
 
-	fmt.Println("final ExecuteWithContext ...")
-
 	return tmpl.executeWithState(state, value)
 }
 

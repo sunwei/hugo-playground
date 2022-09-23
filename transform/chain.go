@@ -2,7 +2,6 @@ package transform
 
 import (
 	"bytes"
-	"fmt"
 	bp "github.com/sunwei/hugo-playground/bufferpool"
 	"io"
 	"io/ioutil"
@@ -80,7 +79,6 @@ func (c *Chain) Apply(to io.Writer, from io.Reader) error {
 				_, _ = io.Copy(tempfile, fb.from)
 				return err
 			}
-			fmt.Println(filename, err)
 			return ferr
 
 		}

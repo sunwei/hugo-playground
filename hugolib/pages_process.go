@@ -31,10 +31,6 @@ type pagesProcessor struct {
 type pageBundles map[string]*fileinfoBundle
 
 func (proc *pagesProcessor) Process(item any) error {
-	fmt.Println("page processor ")
-	fmt.Printf("%#v", item)
-	fmt.Println("?????")
-
 	switch v := item.(type) {
 	// Page bundles mapped to their language.
 	case pageBundles:

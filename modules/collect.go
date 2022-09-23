@@ -91,9 +91,6 @@ func (c *collector) addAndRecurse(owner *moduleAdapter, disabled bool) error {
 
 		if !c.isSeen(moduleImport.Path) {
 			tc, err := c.add(owner, moduleImport, disabled)
-			fmt.Println("not seen...")
-			fmt.Printf("%#v", tc)
-			fmt.Println("_")
 			if err != nil {
 				return err
 			}
