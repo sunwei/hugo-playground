@@ -496,12 +496,6 @@ func (fs *RootMappingFs) doLstat(name string) ([]FileMetaInfo, error) {
 
 	roots := fs.getRoot(key)
 
-	fmt.Println("do lstat...")
-	fmt.Println(name)
-	fmt.Println(key)
-	fmt.Println(roots)
-	fmt.Println("----")
-
 	if roots == nil {
 		if fs.hasPrefix(key) {
 			// We have directories mounted below this.

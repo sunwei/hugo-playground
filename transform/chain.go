@@ -71,10 +71,8 @@ func (c *Chain) Apply(to io.Writer, from io.Reader) error {
 
 		if err := tr(fb); err != nil {
 			// Write output to a temp file so it can be read by the user for trouble shooting.
-			filename := "output.html"
 			tempfile, ferr := ioutil.TempFile("", "hugo-transform-error")
 			if ferr == nil {
-				filename = tempfile.Name()
 				defer tempfile.Close()
 				_, _ = io.Copy(tempfile, fb.from)
 				return err

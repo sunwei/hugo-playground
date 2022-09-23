@@ -663,14 +663,6 @@ func (b *sourceFilesystemsBuilder) createOverlayFs(
 		collector.overlayMountsStatic = collector.overlayMountsStatic.Append(rmfsStatic)
 		collector.overlayFull = collector.overlayFull.Append(afero.NewBasePathFs(modBase, md.dir))
 		collector.overlayResources = collector.overlayResources.Append(afero.NewBasePathFs(modBase, getResourcesDir()))
-
-		fmt.Println(">-=-=-??=")
-		fmt.Println(md.dir)
-
-		fmt.Println("print overlay fs:")
-		printFs(rmfs, "/")
-
-		fmt.Println("<-=-=-??=")
 	}
 
 	return nil
@@ -685,8 +677,6 @@ func printFs(fs afero.Fs, path string) {
 			return err
 		}
 		if info.IsDir() {
-			fmt.Println("123   all are dir...")
-			fmt.Println(path)
 			return nil
 		}
 		var filename string

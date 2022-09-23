@@ -81,9 +81,6 @@ func ApplyProjectConfigDefaults(cfg config.Provider, mod Module) error {
 	languages := cfg.Get("languagesSortedDefaultFirst").(langs.Languages)
 	isMultiHost := languages.IsMultihost()
 
-	fmt.Println("add default configuration 1")
-	fmt.Printf("%#v", moda.mounts)
-	fmt.Printf("")
 	// To bridge between old and new configuration format we need
 	// a way to make sure all of the core components are configured on
 	// the basic level.

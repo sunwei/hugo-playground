@@ -23,7 +23,6 @@ import (
 	"io"
 	"path"
 	"path/filepath"
-	"reflect"
 	"sort"
 	"strings"
 	"time"
@@ -136,8 +135,6 @@ func newSite(cfg deps.DepsCfg) (*Site, error) {
 
 	// [{HTML}, {JSON}, {MARKDOWN}]
 	siteOutputFormatsConfig, err = output.DecodeFormats(siteMediaTypesConfig, outputFormatsConfig...)
-	fmt.Println("===> 1. default site output formats")
-	fmt.Println(siteOutputFormatsConfig)
 
 	if err != nil {
 		return nil, err
@@ -293,9 +290,6 @@ func (s *Site) newPage(
 		m["title"] = title
 	}
 
-	fmt.Println("new page start")
-	fmt.Printf("%#v\n", parentbBucket)
-
 	p, err := newPageFromMeta(
 		n,
 		parentbBucket,
@@ -414,11 +408,6 @@ func (s *Site) initRenderFormats() {
 		return false
 	})
 
-	fmt.Println("2. output formats to render formats:")
-	keys := reflect.ValueOf(s.outputFormats).MapKeys()
-	fmt.Println(keys) // [section term taxonomy 404 page home]
-	fmt.Println("++")
-
 	// media type - format
 	// site output format - render format
 	// Add the per kind configured output formats
@@ -434,10 +423,6 @@ func (s *Site) initRenderFormats() {
 	}
 
 	sort.Sort(formats)
-
-	fmt.Println("format sets:")
-	fmt.Println(formats)
-	fmt.Println("++")
 
 	// HTML
 	s.renderFormats = formats
@@ -458,9 +443,6 @@ func (s *Site) render(ctx *siteRenderContext) (err error) {
 }
 
 func (s *Site) renderAndWritePage(name string, targetPath string, p *pageState, templ tpl.Template) error {
-	fmt.Printf("Render %s to %q", name, targetPath)
-	fmt.Println("")
-
 	renderBuffer := bp.GetBuffer()
 	defer bp.PutBuffer(renderBuffer)
 
@@ -473,9 +455,6 @@ func (s *Site) renderAndWritePage(name string, targetPath string, p *pageState, 
 	if renderBuffer.Len() == 0 {
 		return nil
 	}
-	fmt.Println("08080808080")
-	fmt.Println(renderBuffer.String())
-	fmt.Println("000===000")
 
 	isHTML := of.IsHTML
 
@@ -506,7 +485,6 @@ func (s *Site) renderForTemplate(name, outputFormat string, d any, w io.Writer, 
 		return nil
 	}
 
-	fmt.Println("render for template start 999...")
 	if err = s.Tmpl().Execute(templ, w, d); err != nil {
 		return fmt.Errorf("render of %q failed: %w", name, err)
 	}

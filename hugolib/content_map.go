@@ -240,10 +240,6 @@ func (m *contentMap) getOrCreateSection(n *contentNode, s string) (string, *cont
 			path: n.rootSection(),
 		}
 
-		fmt.Println("get or create section:")
-		fmt.Println(k)
-		fmt.Printf("%#v\n", b)
-
 		m.sections.Insert(k, b)
 	}
 
@@ -254,11 +250,6 @@ func (m *contentMap) getSection(s string) (string, *contentNode) {
 	s = helpers.AddTrailingSlash(path.Dir(strings.TrimSuffix(s, "/")))
 
 	k, v, found := m.sections.LongestPrefix(s)
-	fmt.Println("get section:")
-	fmt.Println(s)
-	fmt.Printf("%#v\n", k)
-	fmt.Printf("%#v\n", v)
-	fmt.Println("__")
 
 	if found {
 		return k, v.(*contentNode)
@@ -300,7 +291,6 @@ func (b *cmInsertKeyBuilder) newTopLevel() {
 }
 
 func (b cmInsertKeyBuilder) ForPage(s string) *cmInsertKeyBuilder {
-	// fmt.Println("ForPage:", s, "baseKey:", b.baseKey, "key:", b.key)
 	baseKey := b.baseKey
 	b.baseKey = s
 
@@ -338,8 +328,6 @@ func (b *cmInsertKeyBuilder) Key() string {
 }
 
 func (b cmInsertKeyBuilder) ForResource(s string) *cmInsertKeyBuilder {
-	// fmt.Println("ForResource:", s, "baseKey:", b.baseKey, "key:", b.key)
-
 	baseKey := helpers.AddTrailingSlash(b.baseKey)
 	s = strings.TrimPrefix(s, baseKey)
 
@@ -367,12 +355,7 @@ func (m *contentMap) CreateMissingNodes() error {
 		_, found := m.sections.Get(sect)
 		if !found {
 			mm := &contentNode{path: sectionPath} // ""
-
-			fmt.Println("create missing nodes:")
-			fmt.Println(sect)
-			fmt.Printf("%#v\n", mm)
-
-			_, _ = m.sections.Insert(sect, mm) // "/"
+			_, _ = m.sections.Insert(sect, mm)    // "/"
 		}
 	}
 

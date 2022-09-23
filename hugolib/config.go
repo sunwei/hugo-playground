@@ -154,7 +154,7 @@ func (l configLoader) collectModules(modConfig modules.Config, v1 config.Provide
 func LoadConfig(d ConfigSourceDescriptor) (config.Provider, []string, error) {
 	var configFiles []string
 	l := configLoader{ConfigSourceDescriptor: d, cfg: config.New()}
-	log.Process("LoadConfig", "init configLoader")
+	log.Process("LoadConfig", "start init configLoader")
 	filename, err := l.loadConfig(d.Filename)
 	if err == nil {
 		configFiles = append(configFiles, filename)
@@ -200,6 +200,7 @@ func LoadConfig(d ConfigSourceDescriptor) (config.Provider, []string, error) {
 
 	configFiles = append(configFiles, modulesConfigFiles...)
 
+	log.Process("LoadConfig", "done")
 	return l.cfg, configFiles, err
 }
 
