@@ -16,6 +16,7 @@ package hugofs
 
 import (
 	"fmt"
+	"github.com/sunwei/hugo-playground/log"
 	"os"
 	"strings"
 
@@ -67,7 +68,9 @@ func newFs(source, destination afero.Fs, cfg config.Provider, wd string) *Fs {
 	if err := source.MkdirAll(absPublishDir, 0777); err != nil && !os.IsExist(err) {
 		panic(err)
 	}
+	log.Process("newFs", "create /public folder")
 
+	log.Process("newFs", "new base path fs &BasePathFs{}")
 	pubFs := afero.NewBasePathFs(destination, absPublishDir)
 
 	return &Fs{
