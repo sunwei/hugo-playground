@@ -7,33 +7,28 @@ import (
 	"github.com/sunwei/hugo-playground/deps"
 	"github.com/sunwei/hugo-playground/hugofs"
 	"github.com/sunwei/hugo-playground/hugolib"
+	"github.com/sunwei/hugo-playground/log"
 	"golang.org/x/tools/txtar"
 	"os"
 	"path/filepath"
 )
 
-// Only support key `build` command
-// Make the code as clear and simple as possible
 func main() {
-	// newHugoCmd register RunE for commandeer build() and call stack looks like below:
-	// fullBuild() -> buildSitesFunc() -> buildSites() -> Build()
-	// The Build() is the most important main process we care about, let's start our adventure here!
+	// 0. local example contents
 
+	log.Process("main", "prepare example project file systems")
 	tempDir, clean, err := CreateTempDir(hugofs.Os, "go-hugo-temp-dir")
 	if err != nil {
-		fmt.Println("Create temporary dir err")
 		clean()
 		os.Exit(-1)
 	}
-	fmt.Println("===temp dir > ...")
-	fmt.Println(tempDir)
 
-	// 0. local example contents
 	var afs afero.Fs
 	afs = afero.NewOsFs()
 	prepareFS(tempDir, afs)
 
 	// 1. config
+	log.Process("main", "load configurations from config.toml and themes")
 	cfg, _, err := hugolib.LoadConfig(
 		hugolib.ConfigSourceDescriptor{
 			WorkingDir: tempDir,
@@ -41,19 +36,20 @@ func main() {
 			Filename:   "config.toml",
 		},
 	)
-	fmt.Println("===show config >...")
-	fmt.Println(cfg.Get(""))
 
 	// 2. hugo file system
+	log.Process("main", "setup hugo file systems based on machine file system and configurations")
 	fs := hugofs.NewFrom(afs, cfg, tempDir)
 
 	// 3. dependencies management
 	depsCfg := deps.DepsCfg{Cfg: cfg, Fs: fs}
 
 	// 4. hugo sites
+	log.Process("main", "create hugo sites based on deps")
 	sites, err := hugolib.NewHugoSites(depsCfg)
 
 	// 5. build
+	log.Process("main", "hugo building...")
 	err = sites.Build(hugolib.BuildCfg{})
 	if err != nil {
 		fmt.Println("Sites build err")
