@@ -101,6 +101,7 @@ func newHugoSites(cfg deps.DepsCfg, sites ...*Site) (*HugoSites, error) {
 	var initErr error
 
 	// 3
+	log.Process("newHugoSites", "get number of worker")
 	numWorkers := config.GetNumWorkerMultiplier()
 	if numWorkers > len(sites) { // sites [en]: 1
 		numWorkers = len(sites)
@@ -108,6 +109,7 @@ func newHugoSites(cfg deps.DepsCfg, sites ...*Site) (*HugoSites, error) {
 
 	var workers *para.Workers
 
+	log.Process("newHugoSites", "init HugoSites")
 	h := &HugoSites{
 		Sites:      sites,
 		workers:    workers,    // nil
@@ -118,7 +120,9 @@ func newHugoSites(cfg deps.DepsCfg, sites ...*Site) (*HugoSites, error) {
 		},
 	}
 
+	log.Process("newHugoSites", "add data to h.init")
 	h.init.data.Add(func() (any, error) {
+		log.Process("newHugoSites", "h.init run h.loadData")
 		err := h.loadData(h.PathSpec.BaseFs.Data.Dirs)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load data: %w", err)
@@ -126,7 +130,9 @@ func newHugoSites(cfg deps.DepsCfg, sites ...*Site) (*HugoSites, error) {
 		return nil, nil
 	})
 
+	log.Process("newHugoSites", "add layouts to h.init")
 	h.init.layouts.Add(func() (any, error) {
+		log.Process("newHugoSites", "h.init run s.Tmpl().MarkReady")
 		for _, s := range h.Sites {
 			if err := s.Tmpl().(tpl.TemplateManager).MarkReady(); err != nil {
 				return nil, err
@@ -139,6 +145,7 @@ func newHugoSites(cfg deps.DepsCfg, sites ...*Site) (*HugoSites, error) {
 		s.h = h
 	}
 
+	log.Process("newHugoSites", "configLoader applyDeps")
 	var l configLoader
 	if err := l.applyDeps(cfg, sites...); err != nil {
 		initErr = fmt.Errorf("add site dependencies: %w", err)
