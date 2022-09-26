@@ -12,6 +12,7 @@ import (
 	"github.com/sunwei/hugo-playground/hugofs"
 	"github.com/sunwei/hugo-playground/hugofs/files"
 	"github.com/sunwei/hugo-playground/identity"
+	"github.com/sunwei/hugo-playground/log"
 	"github.com/sunwei/hugo-playground/output"
 	"github.com/sunwei/hugo-playground/tpl"
 	htmltemplate "github.com/sunwei/hugo-playground/tpl/internal/go_templates/htmltemplate"
@@ -83,6 +84,8 @@ func newTemplateExec(d *deps.Deps) (*templateExec, error) {
 		funcMap[k] = v.Interface()
 	}
 
+	log.Process("newTemplateNamespace", "with funcMap")
+	log.Process("NewLayoutHandler", "to process layout request")
 	h := &templateHandler{
 		main: newTemplateNamespace(funcMap),
 

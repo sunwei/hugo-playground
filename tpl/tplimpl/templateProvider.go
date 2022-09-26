@@ -15,6 +15,7 @@ package tplimpl
 
 import (
 	"github.com/sunwei/hugo-playground/deps"
+	"github.com/sunwei/hugo-playground/log"
 )
 
 // TemplateProvider manages templates.
@@ -26,6 +27,7 @@ var DefaultTemplateProvider *TemplateProvider
 // Update updates the Hugo Template System in the provided Deps
 // with all the additional features, templates & functions.
 func (*TemplateProvider) Update(d *deps.Deps) error {
+	log.Process("templateProvider Update", "new TemplateExec")
 	tmpl, err := newTemplateExec(d)
 	if err != nil {
 		return err

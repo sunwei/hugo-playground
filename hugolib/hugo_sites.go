@@ -258,6 +258,7 @@ func (h *HugoSites) handleDataFile(r source.File) error {
 }
 
 func (l configLoader) applyDeps(cfg deps.DepsCfg, sites ...*Site) error {
+	log.Process("applyDeps", "set cfg.TemplateProvider with DefaultTemplateProvider")
 	if cfg.TemplateProvider == nil {
 		cfg.TemplateProvider = tplimpl.DefaultTemplateProvider
 	}
@@ -274,6 +275,7 @@ func (l configLoader) applyDeps(cfg deps.DepsCfg, sites ...*Site) error {
 		onCreated := func(d *deps.Deps) error {
 			s.Deps = d
 
+			log.Process("applyDeps-onCreate", "set site publisher as DestinationPublisher")
 			// Set up the main publishing chain.
 			pub, err := publisher.NewDestinationPublisher(
 				d.ResourceSpec,
@@ -285,18 +287,22 @@ func (l configLoader) applyDeps(cfg deps.DepsCfg, sites ...*Site) error {
 			}
 			s.publisher = pub
 
+			log.Process("applyDeps-onCreate site initializeSiteInfo", "set site title and owner")
 			if err := s.initializeSiteInfo(); err != nil {
 				return err
 			}
 
 			d.Site = s.Info
 
+			log.Process("applyDeps-onCreate pageMap", "with pageTree, bundleTree and pages, sections, resources")
 			pm := &pageMap{
 				contentMap: newContentMap(),
 				s:          s,
 			}
 
+			log.Process("applyDeps-onCreate site PageCollections", "with pageMap")
 			s.PageCollections = newPageCollections(pm)
+			log.Process("applyDeps-onCreate site RefLinker", "to manage ref link")
 			s.siteRefLinker, err = newSiteRefLinker(s.language, s)
 			return err
 		}
@@ -306,6 +312,7 @@ func (l configLoader) applyDeps(cfg deps.DepsCfg, sites ...*Site) error {
 		cfg.OutputFormats = s.outputFormatsConfig
 
 		var err error
+		log.Process("applyDeps", "new deps")
 		d, err = deps.New(cfg)
 		if err != nil {
 			return fmt.Errorf("create deps: %w", err)
@@ -317,6 +324,7 @@ func (l configLoader) applyDeps(cfg deps.DepsCfg, sites ...*Site) error {
 			return fmt.Errorf("on created: %w", err)
 		}
 
+		log.Process("applyDeps", "deps LoadResources to update template provider, need to make template ready")
 		if err = d.LoadResources(); err != nil {
 			return fmt.Errorf("load resources: %w", err)
 		}

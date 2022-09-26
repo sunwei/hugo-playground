@@ -5,6 +5,7 @@ import (
 	"github.com/sunwei/hugo-playground/common/hreflect"
 	"github.com/sunwei/hugo-playground/common/maps"
 	"github.com/sunwei/hugo-playground/deps"
+	"github.com/sunwei/hugo-playground/log"
 	"github.com/sunwei/hugo-playground/tpl/internal"
 	template "github.com/sunwei/hugo-playground/tpl/internal/go_templates/htmltemplate"
 	"github.com/sunwei/hugo-playground/tpl/internal/go_templates/texttemplate"
@@ -27,6 +28,7 @@ func newTemplateExecuter(d *deps.Deps) (texttemplate.Executer, map[string]reflec
 		funcsv[k] = vv
 	}
 
+	log.Process("GoFuncs", "map template.GoFuncs to funcMap")
 	// Duplicate Go's internal funcs here for faster lookups.
 	for k, v := range template.GoFuncs {
 		if _, exists := funcsv[k]; !exists {
@@ -38,6 +40,7 @@ func newTemplateExecuter(d *deps.Deps) (texttemplate.Executer, map[string]reflec
 		}
 	}
 
+	log.Process("GoFuncs", "map texttemplate.GoFuncs to funcMap")
 	for k, v := range texttemplate.GoFuncs {
 		if _, exists := funcsv[k]; !exists {
 			funcsv[k] = v

@@ -7,6 +7,7 @@ import (
 	"github.com/sunwei/hugo-playground/helpers"
 	"github.com/sunwei/hugo-playground/hugofs"
 	"github.com/sunwei/hugo-playground/langs"
+	"github.com/sunwei/hugo-playground/log"
 	"github.com/sunwei/hugo-playground/media"
 	"github.com/sunwei/hugo-playground/output"
 	"github.com/sunwei/hugo-playground/resources"
@@ -129,21 +130,25 @@ func New(cfg DepsCfg) (*Deps, error) {
 		cfg.OutputFormats = output.DefaultFormats
 	}
 
+	log.Process("New PathSpec", "new PathSpec with all source filesystem built")
 	ps, err := helpers.NewPathSpec(fs, cfg.Language)
 	if err != nil {
 		return nil, fmt.Errorf("create PathSpec: %w", err)
 	}
 
+	log.Process("New resources Spec", "with pathSpec, outputFormats, MediaTypes")
 	resourceSpec, err := resources.NewSpec(ps, cfg.OutputFormats, cfg.MediaTypes)
 	if err != nil {
 		return nil, err
 	}
 
+	log.Process("New content Spec", "content converter provider inside")
 	contentSpec, err := helpers.NewContentSpec(cfg.Language, ps.BaseFs.Content.Fs)
 	if err != nil {
 		return nil, err
 	}
 
+	log.Process("New source Spec", "with source filesystem and language")
 	sp := source.NewSourceSpec(ps, nil, fs.Source)
 
 	d := &Deps{
