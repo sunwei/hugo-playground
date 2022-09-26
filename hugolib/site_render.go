@@ -3,6 +3,7 @@ package hugolib
 import (
 	"errors"
 	"fmt"
+	"github.com/sunwei/hugo-playground/log"
 	"github.com/sunwei/hugo-playground/output"
 	"github.com/sunwei/hugo-playground/resources/page/pagemeta"
 	"sync"
@@ -33,6 +34,7 @@ func (s *Site) renderPages(ctx *siteRenderContext) error {
 
 	wg := &sync.WaitGroup{}
 
+	log.Process("renderPages", "start 3 workers to do page rendering")
 	for i := 0; i < numWorkers; i++ {
 		wg.Add(1)
 		go pageRenderer(ctx, s, pages, results, wg)
@@ -74,6 +76,7 @@ func pageRenderer(
 	defer wg.Done()
 
 	for p := range pages {
+		log.Process("render page", "resolve template for page")
 		templ, found, err := p.resolveTemplate()
 		if err != nil {
 			fmt.Println("failed to resolve template")

@@ -457,6 +457,7 @@ func (s *Site) renderAndWritePage(name string, targetPath string, p *pageState, 
 
 	of := p.outputFormat()
 
+	log.Process("render and write page", "render for template")
 	if err := s.renderForTemplate(p.Kind(), of.Name, p, renderBuffer, templ); err != nil {
 		return err
 	}
@@ -485,6 +486,7 @@ func (s *Site) renderAndWritePage(name string, targetPath string, p *pageState, 
 		}
 	}
 
+	log.Process("render and write page", "publish page")
 	return s.publisher.Publish(pd)
 }
 
