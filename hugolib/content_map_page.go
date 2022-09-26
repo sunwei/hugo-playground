@@ -6,6 +6,7 @@ import (
 	"github.com/sunwei/hugo-playground/common/hugio"
 	"github.com/sunwei/hugo-playground/common/maps"
 	"github.com/sunwei/hugo-playground/common/para"
+	"github.com/sunwei/hugo-playground/log"
 	"github.com/sunwei/hugo-playground/parser/pageparser"
 	"github.com/sunwei/hugo-playground/resources/page"
 	"github.com/sunwei/hugo-playground/resources/resource"
@@ -87,6 +88,8 @@ func newPageMaps(h *HugoSites) *pageMaps {
 
 func (m *pageMaps) AssemblePages() error {
 	return m.withMaps(func(pm *pageMap) error {
+		log.Process("AssemblePages", "pageMaps to assemble all pages")
+		log.Process("pm.CreateMissingNodes", "check root section")
 		if err := pm.CreateMissingNodes(); err != nil {
 			return err
 		}
@@ -116,6 +119,7 @@ func (m *pageMaps) withMaps(fn func(pm *pageMap) error) error {
 }
 
 func (m *pageMap) assemblePages() error {
+	log.Process("assemblePages", "assembleSections firstly")
 	if err := m.assembleSections(); err != nil {
 		return err
 	}
@@ -126,6 +130,7 @@ func (m *pageMap) assemblePages() error {
 		return err
 	}
 
+	log.Process("assemblePages", "walk pageMap pages")
 	m.pages.Walk(func(s string, v any) bool {
 		n := v.(*contentNode)
 
@@ -144,6 +149,7 @@ func (m *pageMap) assemblePages() error {
 		}
 		parentBucket = parent.p.bucket
 
+		log.Process("pageMap pages.Walk", "new page from content node")
 		n.p, err = m.newPageFromContentNode(n, parentBucket, nil)
 		if err != nil {
 			return true
@@ -156,6 +162,7 @@ func (m *pageMap) assemblePages() error {
 			key: s,
 		}
 
+		log.Process("pageMap pages.Walk", "assemble resources")
 		if err = m.assembleResources(s, n.p, parentBucket); err != nil {
 			return true
 		}

@@ -438,6 +438,7 @@ func (s *Site) preparePagesForRender(isRenderingSite bool, idx int) error {
 	var err error
 	s.pageMap.withEveryBundlePage(func(p *pageState) bool {
 		// true, 0
+		log.Process("site preapre pages for render", "pageState init output format")
 		if err = p.initOutputFormat(isRenderingSite, idx); err != nil {
 			return true
 		}

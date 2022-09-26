@@ -1,6 +1,7 @@
 package hugolib
 
 import (
+	"github.com/sunwei/hugo-playground/log"
 	"github.com/sunwei/hugo-playground/output"
 	"github.com/sunwei/hugo-playground/resources/page/pagemeta"
 )
@@ -10,6 +11,7 @@ import (
 // ---
 // Let's focus on full build, remove events
 func (h *HugoSites) Build(config BuildCfg) error {
+	log.Process("HugoSites Build", "start")
 	conf := &config
 
 	// process file system to create content map
@@ -29,6 +31,7 @@ func (h *HugoSites) Build(config BuildCfg) error {
 		return err
 	}
 
+	log.Process("HugoSites Build", "done")
 	return nil
 }
 
@@ -50,6 +53,7 @@ func (h *HugoSites) assemble(bcfg *BuildCfg) error {
 
 func (h *HugoSites) render(config *BuildCfg) error {
 	// template.go MarkReady
+	log.Process("render", "h.init layouts do start")
 	if _, err := h.init.layouts.Do(); err != nil {
 		return err
 	}
@@ -58,6 +62,7 @@ func (h *HugoSites) render(config *BuildCfg) error {
 
 	h.renderFormats = output.Formats{}
 	h.withSite(func(s *Site) error {
+		log.Process("render", "init site render formats")
 		s.initRenderFormats()
 		return nil
 	})
@@ -86,11 +91,13 @@ func (h *HugoSites) render(config *BuildCfg) error {
 				}
 			}
 
+			log.Process("render", "render start with siteRenderContext")
 			if err := s.render(siteRenderContext); err != nil {
 				return err
 			}
 		}
 	}
+	log.Process("hugoSite render", "cross sites robots TXT")
 	if err := h.renderCrossSitesRobotsTXT(); err != nil {
 		return err
 	}

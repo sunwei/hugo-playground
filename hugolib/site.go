@@ -247,6 +247,7 @@ func (s *Site) isEnabled(kind string) bool {
 }
 
 func (s *Site) process(config BuildCfg) (err error) {
+	log.Process("HugoSites Build process", "site initialize with title and owner")
 	if err = s.initialize(); err != nil {
 		err = fmt.Errorf("initialize: %w", err)
 		return
@@ -266,12 +267,14 @@ func (s *Site) initialize() (err error) {
 }
 
 func (s *Site) readAndProcessContent(buildConfig BuildCfg, filenames ...string) error {
+	log.Process("readAndProcessContent", "new source spec with PathSpec, ContentInclusionFilter and BaseFs Content.Fs")
 	sourceSpec := source.NewSourceSpec(s.PathSpec, buildConfig.ContentInclusionFilter, s.BaseFs.Content.Fs)
 
 	proc := newPagesProcessor(s.h, sourceSpec)
 
 	c := newPagesCollector(sourceSpec, s.h.getContentMaps(), proc, filenames...)
 
+	log.Process("readAndProcessContent", "collect content with PagesProcessor")
 	if err := c.Collect(); err != nil {
 		return err
 	}
@@ -433,11 +436,13 @@ func (s *Site) initRenderFormats() {
 }
 
 func (s *Site) render(ctx *siteRenderContext) (err error) {
+	log.Process("Site render", "render pages")
 	if err = s.renderPages(ctx); err != nil {
 		return
 	}
 
 	if ctx.outIdx == 0 {
+		log.Process("Site render", "render 404")
 		if err = s.render404(); err != nil {
 			return
 		}

@@ -2,6 +2,7 @@ package hugolib
 
 import (
 	"github.com/sunwei/hugo-playground/lazy"
+	"github.com/sunwei/hugo-playground/log"
 	"github.com/sunwei/hugo-playground/output"
 	"github.com/sunwei/hugo-playground/resources/page"
 	"go.uber.org/atomic"
@@ -75,12 +76,14 @@ func newPageFromMeta(
 	}
 
 	ps.init.Add(func() (any, error) {
+		log.Process("pageState init", "new page paths")
 		pp, err := newPagePaths(metaProvider.s, ps, metaProvider)
 		if err != nil {
 			return nil, err
 		}
 
 		makeOut := func(f output.Format, render bool) *pageOutput {
+			log.Process("pageState init", "new page output")
 			return newPageOutput(ps, pp, f, render)
 		}
 
@@ -111,6 +114,7 @@ func newPageFromMeta(
 			}
 		}
 
+		log.Process("pageState init", "init OutputFormatsProvider, targetPathDescriptor, SitesProvider")
 		if err := ps.initCommonProviders(pp); err != nil {
 			return nil, err
 		}

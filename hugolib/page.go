@@ -8,6 +8,7 @@ import (
 	"github.com/sunwei/hugo-playground/helpers"
 	"github.com/sunwei/hugo-playground/hugofs/files"
 	"github.com/sunwei/hugo-playground/identity"
+	"github.com/sunwei/hugo-playground/log"
 	"github.com/sunwei/hugo-playground/media"
 	"github.com/sunwei/hugo-playground/output"
 	"github.com/sunwei/hugo-playground/parser/metadecoders"
@@ -329,6 +330,7 @@ func (p *pageState) initOutputFormat(isRenderingSite bool, idx int) error {
 // shiftToOutputFormat is serialized. The output format idx refers to the
 // full set of output formats for all sites.
 func (p *pageState) shiftToOutputFormat(isRenderingSite bool, idx int) error {
+	log.Process("pageState", "init page do start")
 	if err := p.initPage(); err != nil {
 		return err
 	}
@@ -367,11 +369,13 @@ func (p *pageState) shiftToOutputFormat(isRenderingSite bool, idx int) error {
 
 		if cp == nil {
 			var err error
+			log.Process("pageState", "new page content output")
 			cp, err = newPageContentOutput(p, p.pageOutput)
 			if err != nil {
 				return err
 			}
 		}
+		log.Process("pageState", "init contentProvider with page content output")
 		p.pageOutput.initContentProvider(cp)
 	} else {
 		panic("not ready for unrendering site yet")

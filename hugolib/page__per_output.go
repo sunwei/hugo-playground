@@ -13,6 +13,7 @@ import (
 	"github.com/sunwei/hugo-playground/helpers"
 	"github.com/sunwei/hugo-playground/identity"
 	"github.com/sunwei/hugo-playground/lazy"
+	"github.com/sunwei/hugo-playground/log"
 	"github.com/sunwei/hugo-playground/markup/converter"
 	"github.com/sunwei/hugo-playground/markup/converter/hooks"
 	"github.com/sunwei/hugo-playground/output"
@@ -130,10 +131,12 @@ func newPageContentOutput(p *pageState, po *pageOutput) (*pageContentOutput, err
 			}
 		}()
 
+		log.Process("output initContent", "init render hooks")
 		if err := po.cp.initRenderHooks(); err != nil {
 			return err
 		}
 
+		log.Process("output initContent", "content to render")
 		cp.workContent = p.contentToRender(p.source.parsed, p.cmap)
 
 		isHTML := cp.p.m.markup == "html"
@@ -185,6 +188,7 @@ func newPageContentOutput(p *pageState, po *pageOutput) (*pageContentOutput, err
 				}
 			}
 		} else if cp.p.m.summary != "" {
+			log.Process("output initContent", "render content")
 			b, err := cp.renderContent([]byte(cp.p.m.summary), false)
 			if err != nil {
 				return err
@@ -208,6 +212,7 @@ func newPageContentOutput(p *pageState, po *pageOutput) (*pageContentOutput, err
 		cp.plainWords = strings.Fields(cp.plain)
 		cp.setWordCounts(p.m.isCJKLanguage)
 
+		log.Process("output initPlain", "set wordCounts, autoSummary")
 		if err := cp.setAutoSummary(); err != nil {
 			return err, nil
 		}
