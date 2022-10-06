@@ -15,15 +15,11 @@
 package hugofs
 
 import (
-	"fmt"
-	"github.com/sunwei/hugo-playground/log"
-	"os"
-	"strings"
-
-	"github.com/bep/overlayfs"
 	"github.com/spf13/afero"
 	"github.com/sunwei/hugo-playground/common/paths"
 	"github.com/sunwei/hugo-playground/config"
+	"github.com/sunwei/hugo-playground/log"
+	"os"
 )
 
 // Os points to the (real) Os filesystem.
@@ -40,10 +36,6 @@ type Fs struct {
 	// PublishDir is where Hugo publishes its rendered content.
 	// It's mounted inside publishDir (default /public).
 	PublishDir afero.Fs
-
-	// Os is an OS file system.
-	// NOTE: Field is currently unused.
-	Os afero.Fs
 
 	// WorkingDirReadOnly is a read-only file system
 	// restricted to the project working dir.
@@ -76,7 +68,6 @@ func newFs(source, destination afero.Fs, cfg config.Provider, wd string) *Fs {
 	return &Fs{
 		Source:             source,
 		PublishDir:         pubFs,
-		Os:                 &afero.OsFs{},
 		WorkingDirReadOnly: getWorkingDirFsReadOnly(source, workingDir),
 	}
 }
@@ -92,49 +83,6 @@ func isWrite(flag int) bool {
 	return flag&os.O_RDWR != 0 || flag&os.O_WRONLY != 0
 }
 
-// MakeReadableAndRemoveAllModulePkgDir makes any subdir in dir readable and then
-// removes the root.
-// TODO(bep) move this to a more suitable place.
-//
-func MakeReadableAndRemoveAllModulePkgDir(fs afero.Fs, dir string) (int, error) {
-	// Safe guard
-	if !strings.Contains(dir, "pkg") {
-		panic(fmt.Sprint("invalid dir:", dir))
-	}
-
-	counter := 0
-	afero.Walk(fs, dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return nil
-		}
-		if info.IsDir() {
-			counter++
-			fs.Chmod(path, 0777)
-		}
-		return nil
-	})
-	return counter, fs.RemoveAll(dir)
-}
-
-// HasOsFs returns whether fs is an OsFs or if it fs wraps an OsFs.
-// TODO(bep) make this nore robust.
-func IsOsFs(fs afero.Fs) bool {
-	var isOsFs bool
-	WalkFilesystems(fs, func(fs afero.Fs) bool {
-		switch base := fs.(type) {
-		case *afero.MemMapFs:
-			isOsFs = false
-		case *afero.OsFs:
-			isOsFs = true
-		case *afero.BasePathFs:
-			_, supportsLstat, _ := base.LstatIfPossible("asdfasdfasdf")
-			isOsFs = supportsLstat
-		}
-		return isOsFs
-	})
-	return isOsFs
-}
-
 // FilesystemsUnwrapper returns the underlying filesystems.
 type FilesystemsUnwrapper interface {
 	UnwrapFilesystems() []afero.Fs
@@ -147,32 +95,3 @@ type FilesystemUnwrapper interface {
 
 // WalkFn is the walk func for WalkFilesystems.
 type WalkFn func(fs afero.Fs) bool
-
-// WalkFilesystems walks fs recursively and calls fn.
-// If fn returns true, walking is stopped.
-func WalkFilesystems(fs afero.Fs, fn WalkFn) bool {
-	if fn(fs) {
-		return true
-	}
-
-	if afs, ok := fs.(FilesystemUnwrapper); ok {
-		if WalkFilesystems(afs.UnwrapFilesystem(), fn) {
-			return true
-		}
-
-	} else if bfs, ok := fs.(FilesystemsUnwrapper); ok {
-		for _, sf := range bfs.UnwrapFilesystems() {
-			if WalkFilesystems(sf, fn) {
-				return true
-			}
-		}
-	} else if cfs, ok := fs.(overlayfs.FilesystemIterator); ok {
-		for i := 0; i < cfs.NumFilesystems(); i++ {
-			if WalkFilesystems(cfs.Filesystem(i), fn) {
-				return true
-			}
-		}
-	}
-
-	return false
-}

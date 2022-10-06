@@ -138,6 +138,10 @@ func (l configLoader) collectModules(modConfig modules.Config, v1 config.Provide
 
 	// Avoid recreating these later.
 	log.Process("collectModules", "set active modules to config with key 'allModules'")
+	for i, m := range moduleConfig.ActiveModules {
+		fmt.Println(i)
+		fmt.Printf("%#v\n", m)
+	}
 	v1.Set("allModules", moduleConfig.ActiveModules)
 
 	if moduleConfig.GoModulesFilename != "" {
@@ -169,6 +173,7 @@ func LoadConfig(d ConfigSourceDescriptor) (config.Provider, []string, error) {
 
 	log.Process("LoadConfig", "load modules config")
 	modulesConfig, err := l.loadModulesConfig()
+	fmt.Printf("%#v\n", modulesConfig)
 	if err != nil {
 		fmt.Println("load modules config err...")
 		return l.cfg, configFiles, err
