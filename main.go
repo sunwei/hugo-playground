@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/spf13/afero"
-	"github.com/sunwei/hugo-playground/deps"
 	"github.com/sunwei/hugo-playground/hugofs"
 	"github.com/sunwei/hugo-playground/hugolib"
 	"github.com/sunwei/hugo-playground/log"
@@ -36,26 +35,7 @@ func main() {
 			Filename:   "config.toml",
 		},
 	)
-
-	// 2. hugo file system
-	log.Process("main", "setup hugo file systems based on machine file system and configurations")
-	fs := hugofs.NewFrom(afs, cfg, tempDir)
-
-	// 3. dependencies management
-	depsCfg := deps.DepsCfg{Cfg: cfg, Fs: fs}
-
-	// 4. hugo sites
-	log.Process("main", "create hugo sites based on deps")
-	sites, err := hugolib.NewHugoSites(depsCfg)
-
-	// 5. build
-	log.Process("main", "hugo building...")
-	err = sites.Build(hugolib.BuildCfg{})
-	if err != nil {
-		fmt.Println("Sites build err")
-		fmt.Printf("%#v", err)
-		os.Exit(-1)
-	}
+	fmt.Printf("%#v\n", cfg)
 
 	fmt.Println("===temp dir at last > ...")
 	fmt.Println(tempDir)

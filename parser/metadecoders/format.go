@@ -1,7 +1,6 @@
 package metadecoders
 
 import (
-	"github.com/sunwei/hugo-playground/media"
 	"path/filepath"
 	"strings"
 )
@@ -30,18 +29,6 @@ func FormatFromString(formatStr string) Format {
 	switch formatStr {
 	case "toml":
 		return TOML
-	}
-
-	return ""
-}
-
-// FormatFromMediaType gets the Format given a MIME type, empty string
-// if unknown.
-func FormatFromMediaType(m media.Type) Format {
-	for _, suffix := range m.Suffixes() {
-		if f := FormatFromString(suffix); f != "" {
-			return f
-		}
 	}
 
 	return ""
