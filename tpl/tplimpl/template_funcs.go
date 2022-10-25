@@ -16,7 +16,6 @@ import (
 	_ "github.com/sunwei/hugo-playground/tpl/compare"
 	_ "github.com/sunwei/hugo-playground/tpl/diagrams"
 	_ "github.com/sunwei/hugo-playground/tpl/os"
-	_ "github.com/sunwei/hugo-playground/tpl/transform"
 )
 
 func newTemplateExecuter(d *deps.Deps) (texttemplate.Executer, map[string]reflect.Value) {

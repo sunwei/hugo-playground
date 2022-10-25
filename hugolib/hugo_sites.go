@@ -15,7 +15,6 @@ import (
 	"github.com/sunwei/hugo-playground/output"
 	"github.com/sunwei/hugo-playground/parser/metadecoders"
 	"github.com/sunwei/hugo-playground/publisher"
-	"github.com/sunwei/hugo-playground/resources/page"
 	"github.com/sunwei/hugo-playground/source"
 	"github.com/sunwei/hugo-playground/tpl"
 	"github.com/sunwei/hugo-playground/tpl/tplimpl"
@@ -292,8 +291,6 @@ func (l configLoader) applyDeps(cfg deps.DepsCfg, sites ...*Site) error {
 				return err
 			}
 
-			d.Site = s.Info
-
 			log.Process("applyDeps-onCreate pageMap", "with pageTree, bundleTree and pages, sections, resources")
 			pm := &pageMap{
 				contentMap: newContentMap(),
@@ -302,8 +299,6 @@ func (l configLoader) applyDeps(cfg deps.DepsCfg, sites ...*Site) error {
 
 			log.Process("applyDeps-onCreate site PageCollections", "with pageMap")
 			s.PageCollections = newPageCollections(pm)
-			log.Process("applyDeps-onCreate site RefLinker", "to manage ref link")
-			s.siteRefLinker, err = newSiteRefLinker(s.language, s)
 			return err
 		}
 
@@ -398,20 +393,8 @@ func (h *HugoSites) getContentMaps() *pageMaps {
 	return h.content
 }
 
-func (h *HugoSites) siteInfos() page.Sites {
-	infos := make(page.Sites, len(h.Sites))
-	for i, site := range h.Sites {
-		infos[i] = site.Info
-	}
-	return infos
-}
-
 func (h *HugoSites) createPageCollections() error {
 	return nil
-}
-
-func (h *HugoSites) findPagesByKindIn(kind string, inPages page.Pages) page.Pages {
-	return h.Sites[0].findPagesByKindIn(kind, inPages)
 }
 
 func (h *HugoSites) withSite(fn func(s *Site) error) error {

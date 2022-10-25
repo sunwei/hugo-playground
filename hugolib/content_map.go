@@ -70,66 +70,6 @@ type contentBundleViewInfo struct {
 
 type contentTreeNodeCallback func(s string, n *contentNode) bool
 
-var (
-	contentTreeNoListAlwaysFilter = func(s string, n *contentNode) bool {
-		if n.p == nil {
-			return true
-		}
-		return n.p.m.noListAlways()
-	}
-
-	contentTreeNoRenderFilter = func(s string, n *contentNode) bool {
-		if n.p == nil {
-			return true
-		}
-		return n.p.m.noRender()
-	}
-)
-
-func (c contentTrees) WalkRenderable(fn contentTreeNodeCallback) {
-	query := pageMapQuery{Filter: contentTreeNoRenderFilter}
-	for _, tree := range c {
-		tree.WalkQuery(query, fn)
-	}
-}
-
-func (c *contentTree) WalkQuery(query pageMapQuery, walkFn contentTreeNodeCallback) {
-	filter := query.Filter
-	if filter == nil {
-		filter = contentTreeNoListAlwaysFilter
-	}
-	if query.Prefix != "" {
-		c.WalkBelow(query.Prefix, func(s string, v any) bool {
-			n := v.(*contentNode)
-			if filter != nil && filter(s, n) {
-				return false
-			}
-			return walkFn(s, n)
-		})
-
-		return
-	}
-
-	c.Walk(func(s string, v any) bool {
-		n := v.(*contentNode)
-		if filter != nil && filter(s, n) {
-			return false
-		}
-		return walkFn(s, n)
-	})
-}
-
-// WalkBelow walks the tree below the given prefix, i.e. it skips the
-// node with the given prefix as key.
-func (c *contentTree) WalkBelow(prefix string, fn radix.WalkFn) {
-	c.Tree.WalkPrefix(prefix, func(s string, v any) bool {
-		if s == prefix {
-			return false
-		}
-		return fn(s, v)
-	})
-}
-
 func newContentMap() *contentMap {
 	m := &contentMap{
 		pages:     &contentTree{Name: "pages", Tree: radix.New()},

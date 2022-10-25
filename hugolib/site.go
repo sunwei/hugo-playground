@@ -3,10 +3,8 @@ package hugolib
 import (
 	"fmt"
 	"github.com/spf13/afero"
-	bp "github.com/sunwei/hugo-playground/bufferpool"
 	"github.com/sunwei/hugo-playground/common/maps"
 	"github.com/sunwei/hugo-playground/common/text"
-	"github.com/sunwei/hugo-playground/config"
 	"github.com/sunwei/hugo-playground/deps"
 	"github.com/sunwei/hugo-playground/helpers"
 	"github.com/sunwei/hugo-playground/identity"
@@ -18,13 +16,9 @@ import (
 	"github.com/sunwei/hugo-playground/output"
 	"github.com/sunwei/hugo-playground/publisher"
 	"github.com/sunwei/hugo-playground/resources/page"
-	"github.com/sunwei/hugo-playground/tpl"
-	"html/template"
 	"io"
 	"path"
 	"path/filepath"
-	"sort"
-	"strings"
 	"time"
 )
 
@@ -183,52 +177,6 @@ func (s *Site) initializeSiteInfo() error {
 	return nil
 }
 
-func (s *SiteInfo) Pages() page.Pages {
-	return s.s.Pages()
-}
-
-func (s *SiteInfo) RegularPages() page.Pages {
-	return s.s.RegularPages()
-}
-
-func (s *SiteInfo) AllPages() page.Pages {
-	return s.s.AllPages()
-}
-
-func (s *SiteInfo) AllRegularPages() page.Pages {
-	return s.s.AllRegularPages()
-}
-
-func (s *SiteInfo) Title() string {
-	return s.title
-}
-
-func (s *SiteInfo) Site() page.Site {
-	return s
-}
-
-func (s *SiteInfo) Data() map[string]any {
-	return s.s.h.Data()
-}
-
-// Current returns the currently rendered Site.
-// If that isn't set yet, which is the situation before we start rendering,
-// if will return the Site itself.
-func (s *SiteInfo) Current() page.Site {
-	if s.s.h.currentSite == nil {
-		return s
-	}
-	return s.s.h.currentSite.Info
-}
-
-func (s *SiteInfo) String() string {
-	return fmt.Sprintf("Site(%q)", s.title)
-}
-
-func (s *SiteInfo) BaseURL() template.URL {
-	return template.URL(s.s.PathSpec.BaseURL.String())
-}
-
 func (s *Site) isEnabled(kind string) bool {
 	if kind == kindUnknown {
 		panic("Unknown kind")
@@ -281,37 +229,6 @@ func (s *Site) shouldBuild(p page.Page) bool {
 	return true
 }
 
-// Sites is a convenience method to get all the Hugo sites/languages configured.
-func (s *SiteInfo) Sites() page.Sites {
-	return s.s.h.siteInfos()
-}
-
-// hookRendererTemplate is the canonical implementation of all hooks.ITEMRenderer,
-// where ITEM is the thing being hooked.
-type hookRendererTemplate struct {
-	templateHandler tpl.TemplateHandler
-	identity.SearchProvider
-	templ           tpl.Template
-	resolvePosition func(ctx any) text.Position
-}
-
-func (p *pageState) getContentConverter() converter.Converter {
-	var err error
-	p.m.contentConverterInit.Do(func() {
-		markup := p.m.markup
-		if markup == "html" {
-			// Only used for shortcode inner content.
-			markup = "markdown"
-		}
-		p.m.contentConverter, err = p.m.newContentConverter(p, markup)
-	})
-
-	if err != nil {
-		fmt.Printf("Failed to create content converter: %v", err)
-	}
-	return p.m.contentConverter
-}
-
 func (s *Site) initInit(init *lazy.Init, pctx pageContext) bool {
 	_, err := init.Do()
 	if err != nil {
@@ -327,149 +244,4 @@ type pageContext interface {
 	wrapError(err error) error
 	getContentConverter() converter.Converter
 	addDependency(dep identity.Provider)
-}
-
-// This is all the kinds we can expect to find in .Site.Pages.
-var allKindsInPages = []string{page.KindPage, page.KindHome, page.KindSection, page.KindTerm, page.KindTaxonomy}
-
-func (s *Site) initRenderFormats() {
-	formatSet := make(map[string]bool)
-	formats := output.Formats{}
-	s.pageMap.pageTrees.WalkRenderable(func(s string, n *contentNode) bool {
-		// empty
-		for _, f := range n.p.m.configuredOutputFormats {
-			if !formatSet[f.Name] {
-				formats = append(formats, f)
-				formatSet[f.Name] = true
-			}
-		}
-		return false
-	})
-
-	// media type - format
-	// site output format - render format
-	// Add the per kind configured output formats
-	for _, kind := range allKindsInPages {
-		if siteFormats, found := s.outputFormats[kind]; found {
-			for _, f := range siteFormats {
-				if !formatSet[f.Name] {
-					formats = append(formats, f)
-					formatSet[f.Name] = true
-				}
-			}
-		}
-	}
-
-	sort.Sort(formats)
-
-	// HTML
-	s.renderFormats = formats
-}
-
-func (s *Site) renderAndWritePage(name string, targetPath string, p *pageState, templ tpl.Template) error {
-	renderBuffer := bp.GetBuffer()
-	defer bp.PutBuffer(renderBuffer)
-
-	of := p.outputFormat()
-
-	log.Process("render and write page", "render for template")
-	if err := s.renderForTemplate(p.Kind(), of.Name, p, renderBuffer, templ); err != nil {
-		return err
-	}
-
-	if renderBuffer.Len() == 0 {
-		return nil
-	}
-
-	isHTML := of.IsHTML
-
-	pd := publisher.Descriptor{
-		Src:          renderBuffer,
-		TargetPath:   targetPath,
-		OutputFormat: p.outputFormat(),
-	}
-
-	if isHTML {
-		if s.Info.relativeURLs {
-			fmt.Println("based on default configuration, should never been here")
-			pd.AbsURLPath = s.absURLPath(targetPath)
-		}
-
-		// For performance reasons we only inject the Hugo generator tag on the home page.
-		if p.IsHome() {
-			pd.AddHugoGeneratorTag = !s.Cfg.GetBool("disableHugoGeneratorInject")
-		}
-	}
-
-	log.Process("render and write page", "publish page")
-	return s.publisher.Publish(pd)
-}
-
-func (s *Site) renderForTemplate(name, outputFormat string, d any, w io.Writer, templ tpl.Template) (err error) {
-	if templ == nil {
-		fmt.Printf("missing layout name: %s, output format: %s", name, outputFormat)
-		return nil
-	}
-
-	if err = s.Tmpl().Execute(templ, w, d); err != nil {
-		return fmt.Errorf("render of %q failed: %w", name, err)
-	}
-	return
-}
-
-func (s *Site) absURLPath(targetPath string) string {
-	var path string
-	if s.Info.relativeURLs {
-		path = helpers.GetDottedRelativePath(targetPath)
-	} else {
-		url := s.PathSpec.BaseURL.String()
-		if !strings.HasSuffix(url, "/") {
-			url += "/"
-		}
-		path = url
-	}
-
-	return path
-}
-
-func (s *Site) lookupLayouts(layouts ...string) tpl.Template {
-	for _, l := range layouts {
-		if templ, found := s.Tmpl().Lookup(l); found {
-			return templ
-		}
-	}
-
-	return nil
-}
-
-func newSiteRefLinker(cfg config.Provider, s *Site) (siteRefLinker, error) {
-
-	notFoundURL := cfg.GetString("refLinksNotFoundURL")
-
-	return siteRefLinker{s: s, notFoundURL: notFoundURL}, nil
-}
-
-func (s siteRefLinker) logNotFound(ref, what string, p page.Page, position text.Position) {
-	if position.IsValid() {
-		fmt.Printf("[%s] REF_NOT_FOUND: Ref %q: %s: %s", s.s.Lang(), ref, position.String(), what)
-	} else if p == nil {
-		fmt.Printf("[%s] REF_NOT_FOUND: Ref %q: %s", s.s.Lang(), ref, what)
-	} else {
-		fmt.Printf("[%s] REF_NOT_FOUND: Ref %q from page %q: %s", s.s.Lang(), ref, p.Pathc(), what)
-	}
-}
-
-func (s *siteRefLinker) refLink(ref string, source any, relative bool, outputFormat string) (string, error) {
-	return "", nil
-}
-
-func (s *Site) errorCollator(results <-chan error, errs chan<- error) {
-	var errors []error
-	for e := range results {
-		errors = append(errors, e)
-	}
-
-	errs <- s.h.pickOneAndLogTheRest(errors)
-
-	close(errs)
 }

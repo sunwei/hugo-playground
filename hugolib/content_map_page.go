@@ -1,8 +1,6 @@
 package hugolib
 
 import (
-	"fmt"
-	"github.com/sunwei/hugo-playground/common/maps"
 	"github.com/sunwei/hugo-playground/common/para"
 	"github.com/sunwei/hugo-playground/resources/page"
 	"sync"
@@ -19,9 +17,6 @@ type pageMaps struct {
 }
 
 type pagesMapBucket struct {
-	// Cascading front matter.
-	cascade map[page.PageMatcher]maps.Params
-
 	owner *pageState // The branch node
 
 	*pagesMapBucketPages
@@ -46,23 +41,6 @@ type viewName struct {
 type pageMapQuery struct {
 	Prefix string
 	Filter contentTreeNodeCallback
-}
-
-func (m *pageMap) createListAllPages() page.Pages {
-	pages := make(page.Pages, 0)
-	m.contentMap.pageTrees.Walk(func(s string, n *contentNode) bool {
-		if n.p == nil {
-			panic(fmt.Sprintf("BUG: page not set for %q", s))
-		}
-		if contentTreeNoListAlwaysFilter(s, n) {
-			return false
-		}
-		pages = append(pages, n.p)
-		return false
-	})
-
-	page.SortByDefault(pages)
-	return pages
 }
 
 func (v viewName) IsZero() bool {
