@@ -2,8 +2,6 @@ package hugolib
 
 import (
 	"github.com/sunwei/hugo-playground/log"
-	"github.com/sunwei/hugo-playground/output"
-	"github.com/sunwei/hugo-playground/resources/page/pagemeta"
 )
 
 // Build builds all sites. If filesystem events are provided,
@@ -26,11 +24,6 @@ func (h *HugoSites) Build(config BuildCfg) error {
 		return err
 	}
 
-	err = h.render(conf)
-	if err != nil {
-		return err
-	}
-
 	log.Process("HugoSites Build", "done")
 	return nil
 }
@@ -49,82 +42,4 @@ func (h *HugoSites) assemble(bcfg *BuildCfg) error {
 	}
 
 	return nil
-}
-
-func (h *HugoSites) render(config *BuildCfg) error {
-	// template.go MarkReady
-	log.Process("render", "h.init layouts do start")
-	if _, err := h.init.layouts.Do(); err != nil {
-		return err
-	}
-
-	siteRenderContext := &siteRenderContext{cfg: config, multihost: false}
-
-	h.renderFormats = output.Formats{}
-	h.withSite(func(s *Site) error {
-		log.Process("render", "init site render formats")
-		s.initRenderFormats()
-		return nil
-	})
-
-	for _, s := range h.Sites {
-		h.renderFormats = append(h.renderFormats, s.renderFormats...)
-	}
-
-	i := 0
-	for _, s := range h.Sites {
-		h.currentSite = s
-		for siteOutIdx, renderFormat := range s.renderFormats {
-			siteRenderContext.outIdx = siteOutIdx
-			siteRenderContext.sitesOutIdx = i
-			i++
-
-			for _, s2 := range h.Sites {
-				// We render site by site, but since the content is lazily rendered
-				// and a site can "borrow" content from other sites, every site
-				// needs this set.
-				s2.rc = &siteRenderingContext{Format: renderFormat}
-
-				// Get page output ready
-				if err := s2.preparePagesForRender(s == s2, siteRenderContext.sitesOutIdx); err != nil {
-					return err
-				}
-			}
-
-			log.Process("render", "render start with siteRenderContext")
-			if err := s.render(siteRenderContext); err != nil {
-				return err
-			}
-		}
-	}
-	log.Process("hugoSite render", "cross sites robots TXT")
-	if err := h.renderCrossSitesRobotsTXT(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (h *HugoSites) renderCrossSitesRobotsTXT() error {
-	s := h.Sites[0]
-
-	p, err := newPageStandalone(&pageMeta{
-		s:    s,
-		kind: kindRobotsTXT,
-		urlPaths: pagemeta.URLPath{
-			URL: "robots.txt",
-		},
-	},
-		output.RobotsTxtFormat)
-	if err != nil {
-		return err
-	}
-
-	if !p.render {
-		return nil
-	}
-
-	templ := s.lookupLayouts("robots.txt", "_default/robots.txt", "_internal/_default/robots.txt")
-
-	return s.renderAndWritePage("Robots Txt", "robots.txt", p, templ)
 }

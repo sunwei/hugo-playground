@@ -61,9 +61,6 @@ type Site struct {
 	outputFormatsConfig output.Formats
 	mediaTypesConfig    media.Types
 
-	// We render each site for all the relevant output formats in serial with
-	// this rendering context pointing to the current one.
-	rc      *siteRenderingContext
 	siteCfg siteConfigHolder
 
 	// The func used to title case titles.
@@ -96,10 +93,6 @@ type Site struct {
 	// Shortcut to the home page. Note that this may be nil if
 	// home page, for some odd reason, is disabled.
 	home *pageState
-}
-
-type siteRenderingContext struct {
-	output.Format
 }
 
 type siteRefLinker struct {
@@ -170,8 +163,6 @@ func newSite(cfg deps.DepsCfg) (*Site, error) {
 
 		siteCfg:   siteConfig,
 		titleFunc: titleFunc,
-
-		rc: &siteRenderingContext{output.HTMLFormat},
 	}
 
 	return s, nil
@@ -433,22 +424,6 @@ func (s *Site) initRenderFormats() {
 
 	// HTML
 	s.renderFormats = formats
-}
-
-func (s *Site) render(ctx *siteRenderContext) (err error) {
-	log.Process("Site render", "render pages")
-	if err = s.renderPages(ctx); err != nil {
-		return
-	}
-
-	if ctx.outIdx == 0 {
-		log.Process("Site render", "render 404")
-		if err = s.render404(); err != nil {
-			return
-		}
-	}
-
-	return
 }
 
 func (s *Site) renderAndWritePage(name string, targetPath string, p *pageState, templ tpl.Template) error {

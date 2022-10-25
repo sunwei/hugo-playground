@@ -48,14 +48,9 @@ func main() {
 	log.Process("main", "create hugo sites based on deps")
 	sites, err := hugolib.NewHugoSites(depsCfg)
 
-	// 5. build
-	log.Process("main", "hugo building...")
-	err = sites.Build(hugolib.BuildCfg{})
-	if err != nil {
-		fmt.Println("Sites build err")
-		fmt.Printf("%#v", err)
-		os.Exit(-1)
-	}
+	fmt.Println("HugoSites:")
+	fmt.Printf("%#v\n", sites)
+	fmt.Printf("%#v\n", sites.Sites[0])
 
 	fmt.Println("===temp dir at last > ...")
 	fmt.Println(tempDir)

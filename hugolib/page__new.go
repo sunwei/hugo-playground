@@ -124,19 +124,3 @@ func newPageFromMeta(
 
 	return ps, err
 }
-
-// Used by the legacy 404, sitemap and robots.txt rendering
-func newPageStandalone(m *pageMeta, f output.Format) (*pageState, error) {
-	m.configuredOutputFormats = output.Formats{f}
-	m.standalone = true
-	p, err := newPageFromMeta(nil, nil, nil, m)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := p.initPage(); err != nil {
-		return nil, err
-	}
-
-	return p, nil
-}
