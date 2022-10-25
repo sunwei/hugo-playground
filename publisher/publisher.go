@@ -7,7 +7,6 @@ import (
 	bp "github.com/sunwei/hugo-playground/bufferpool"
 	"github.com/sunwei/hugo-playground/helpers"
 	"github.com/sunwei/hugo-playground/media"
-	"github.com/sunwei/hugo-playground/minifiers"
 	"github.com/sunwei/hugo-playground/output"
 	"github.com/sunwei/hugo-playground/resources"
 	"github.com/sunwei/hugo-playground/transform"
@@ -53,18 +52,15 @@ type Descriptor struct {
 // NewDestinationPublisher creates a new DestinationPublisher.
 func NewDestinationPublisher(rs *resources.Spec, outputFormats output.Formats, mediaTypes media.Types) (pub DestinationPublisher, err error) {
 	fs := rs.BaseFs.PublishFs
-	cfg := rs.Cfg
 
 	pub = DestinationPublisher{fs: fs}
-	pub.min, err = minifiers.New(mediaTypes, outputFormats, cfg)
 	return
 }
 
 // DestinationPublisher is the default and currently only publisher in Hugo. This
 // publisher prepares and publishes an item to the defined destination, e.g. /public.
 type DestinationPublisher struct {
-	fs  afero.Fs
-	min minifiers.Client
+	fs afero.Fs
 }
 
 // Publish applies any relevant transformations and writes the file
