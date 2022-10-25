@@ -434,19 +434,6 @@ func (h *HugoSites) withSite(fn func(s *Site) error) error {
 	return g.Wait()
 }
 
-func (s *Site) preparePagesForRender(isRenderingSite bool, idx int) error {
-	var err error
-	s.pageMap.withEveryBundlePage(func(p *pageState) bool {
-		// true, 0
-		log.Process("site preapre pages for render", "pageState init output format")
-		if err = p.initOutputFormat(isRenderingSite, idx); err != nil {
-			return true
-		}
-		return false
-	})
-	return nil
-}
-
 // shouldRender is used in the Fast Render Mode to determine if we need to re-render
 // a Page: If it is recently visited (the home pages will always be in this set) or changed.
 // Note that a page does not have to have a content page / file.

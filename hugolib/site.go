@@ -18,7 +18,6 @@ import (
 	"github.com/sunwei/hugo-playground/output"
 	"github.com/sunwei/hugo-playground/publisher"
 	"github.com/sunwei/hugo-playground/resources/page"
-	"github.com/sunwei/hugo-playground/source"
 	"github.com/sunwei/hugo-playground/tpl"
 	"html/template"
 	"io"
@@ -237,71 +236,12 @@ func (s *Site) isEnabled(kind string) bool {
 	return true
 }
 
-func (s *Site) process(config BuildCfg) (err error) {
-	log.Process("HugoSites Build process", "site initialize with title and owner")
-	if err = s.initialize(); err != nil {
-		err = fmt.Errorf("initialize: %w", err)
-		return
-	}
-	if err = s.readAndProcessContent(config); err != nil {
-		err = fmt.Errorf("readAndProcessContent: %w", err)
-		fmt.Println("read and process content err")
-		fmt.Printf("%#v", err)
-
-		return
-	}
-	return err
-}
-
 func (s *Site) initialize() (err error) {
 	return s.initializeSiteInfo()
 }
 
-func (s *Site) readAndProcessContent(buildConfig BuildCfg, filenames ...string) error {
-	log.Process("readAndProcessContent", "new source spec with PathSpec, ContentInclusionFilter and BaseFs Content.Fs")
-	sourceSpec := source.NewSourceSpec(s.PathSpec, buildConfig.ContentInclusionFilter, s.BaseFs.Content.Fs)
-
-	proc := newPagesProcessor(s.h, sourceSpec)
-
-	c := newPagesCollector(sourceSpec, s.h.getContentMaps(), proc, filenames...)
-
-	log.Process("readAndProcessContent", "collect content with PagesProcessor")
-	if err := c.Collect(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (s *Site) publish(path string, r io.Reader, fs afero.Fs) (err error) {
 	return helpers.WriteToDisk(filepath.Clean(path), r, fs)
-}
-
-func (s *Site) newPage(
-	n *contentNode,
-	parentbBucket *pagesMapBucket,
-	kind, title string,
-	sections ...string) *pageState {
-
-	m := map[string]any{}
-	if title != "" {
-		m["title"] = title
-	}
-
-	p, err := newPageFromMeta(
-		n,
-		parentbBucket,
-		m,
-		&pageMeta{
-			s:        s,
-			kind:     kind,
-			sections: sections,
-		})
-	if err != nil {
-		panic(err)
-	}
-
-	return p
 }
 
 func (s *SiteInfo) Params() maps.Params {

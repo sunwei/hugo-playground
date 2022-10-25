@@ -260,26 +260,6 @@ func (p *pageMeta) RelatedKeywords(cfg related.IndexConfig) ([]related.Keyword, 
 	return cfg.ToKeywords(v)
 }
 
-func (p *pageMeta) getListFilter(local bool) contentTreeNodeCallback {
-	return newContentTreeFilter(func(n *contentNode) bool {
-		if n == nil {
-			return true
-		}
-
-		var shouldList bool
-		switch n.p.m.buildConfig.List {
-		case pagemeta.Always:
-			shouldList = true
-		case pagemeta.Never:
-			shouldList = false
-		case pagemeta.ListLocally:
-			shouldList = local
-		}
-
-		return !shouldList
-	})
-}
-
 func (pm *pageMeta) setMetadata(parentBucket *pagesMapBucket, p *pageState, frontmatter map[string]any) error {
 	pm.params = make(maps.Params)
 
