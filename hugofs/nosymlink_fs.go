@@ -51,7 +51,7 @@ func (f *noSymlinkFile) Readdir(count int) ([]os.FileInfo, error) {
 		filename := filepath.Join(f.Name(), x.Name())
 		if _, err := f.fs.checkSymlinkStatus(filename, x); err != nil {
 			// Log a warning and drop the file from the list
-			logUnsupportedSymlink(filename, nil)
+			logUnsupportedSymlink(filename)
 		} else {
 			filtered = append(filtered, x)
 		}

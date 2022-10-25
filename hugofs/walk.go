@@ -14,15 +14,12 @@
 package hugofs
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
-
-	"github.com/sunwei/hugo-playground/common/loggers"
-
-	"errors"
 
 	"github.com/spf13/afero"
 )
@@ -56,8 +53,6 @@ type WalkwayConfig struct {
 	Fs       afero.Fs
 	Root     string
 	BasePath string
-
-	Logger loggers.Logger
 
 	// One or both of these may be pre-set.
 	Info       FileMetaInfo
@@ -144,7 +139,7 @@ func lstatIfPossible(fs afero.Fs, path string) (os.FileInfo, bool, error) {
 // checkErr returns true if the error is handled.
 func (w *Walkway) checkErr(filename string, err error) bool {
 	if err == ErrPermissionSymlink {
-		logUnsupportedSymlink(filename, nil)
+		logUnsupportedSymlink(filename)
 		return true
 	}
 
@@ -159,7 +154,7 @@ func (w *Walkway) checkErr(filename string, err error) bool {
 	return false
 }
 
-func logUnsupportedSymlink(filename string, logger loggers.Logger) {
+func logUnsupportedSymlink(filename string) {
 	fmt.Printf("Unsupported symlink found in %q, skipping. \n", filename)
 }
 

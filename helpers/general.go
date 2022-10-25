@@ -5,17 +5,11 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/jdkato/prose/transform"
-	"github.com/mitchellh/hashstructure"
 	bp "github.com/sunwei/hugo-playground/bufferpool"
-	"github.com/sunwei/hugo-playground/common/loggers"
 	"io"
 	"path/filepath"
-	"sort"
-	"strconv"
 	"strings"
 	"sync"
-	"unicode"
-	"unicode/utf8"
 )
 
 // FilePathSeparator as defined by os.Separator.
@@ -98,99 +92,8 @@ func UniqueStringsReuse(s []string) []string {
 	return result
 }
 
-// UniqueStringsSorted UniqueStringsReuse returns a sorted slice with any duplicates removed.
-// It will modify the input slice.
-func UniqueStringsSorted(s []string) []string {
-	if len(s) == 0 {
-		return nil
-	}
-	ss := sort.StringSlice(s)
-	ss.Sort()
-	i := 0
-	for j := 1; j < len(s); j++ {
-		if !ss.Less(i, j) {
-			continue
-		}
-		i++
-		s[i] = s[j]
-	}
-
-	return s[:i+1]
-}
-
-// FirstUpper returns a string with the first character as upper case.
-func FirstUpper(s string) string {
-	if s == "" {
-		return ""
-	}
-	r, n := utf8.DecodeRuneInString(s)
-	return string(unicode.ToUpper(r)) + s[n:]
-}
-
-// NewDistinctErrorLogger creates a new DistinctLogger that logs ERRORs
-func NewDistinctErrorLogger() loggers.Logger {
-	return &DistinctLogger{m: make(map[string]bool), Logger: loggers.NewErrorLogger()}
-}
-
 // DistinctLogger ignores duplicate log statements.
 type DistinctLogger struct {
-	loggers.Logger
 	sync.RWMutex
 	m map[string]bool
-}
-
-// HashString returns a hash from the given elements.
-// It will panic if the hash cannot be calculated.
-func HashString(elements ...any) string {
-	var o any
-	if len(elements) == 1 {
-		o = elements[0]
-	} else {
-		o = elements
-	}
-
-	hash, err := hashstructure.Hash(o, nil)
-	if err != nil {
-		panic(err)
-	}
-	return strconv.FormatUint(hash, 10)
-}
-
-// MD5FromFileFast creates a MD5 hash from the given file. It only reads parts of
-// the file for speed, so don't use it if the files are very subtly different.
-// It will not close the file.
-func MD5FromFileFast(r io.ReadSeeker) (string, error) {
-	const (
-		// Do not change once set in stone!
-		maxChunks = 8
-		peekSize  = 64
-		seek      = 2048
-	)
-
-	h := md5.New()
-	buff := make([]byte, peekSize)
-
-	for i := 0; i < maxChunks; i++ {
-		if i > 0 {
-			_, err := r.Seek(seek, 0)
-			if err != nil {
-				if err == io.EOF {
-					break
-				}
-				return "", err
-			}
-		}
-
-		_, err := io.ReadAtLeast(r, buff, peekSize)
-		if err != nil {
-			if err == io.EOF || err == io.ErrUnexpectedEOF {
-				h.Write(buff)
-				break
-			}
-			return "", err
-		}
-		h.Write(buff)
-	}
-
-	return hex.EncodeToString(h.Sum(nil)), nil
 }

@@ -444,8 +444,6 @@ func (h *HugoSites) pickOneAndLogTheRest(errors []error) error {
 		if j >= errLogThreshold {
 			break
 		}
-
-		h.Log.Errorln(err)
 	}
 
 	return errors[i]

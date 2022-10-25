@@ -2,7 +2,6 @@ package deps
 
 import (
 	"fmt"
-	"github.com/sunwei/hugo-playground/common/loggers"
 	"github.com/sunwei/hugo-playground/config"
 	"github.com/sunwei/hugo-playground/helpers"
 	"github.com/sunwei/hugo-playground/hugofs"
@@ -20,9 +19,6 @@ import (
 // There will be normally only one instance of deps in play
 // at a given time, i.e. one per Site built.
 type Deps struct {
-	// The logger to use.
-	Log loggers.Logger `json:"-"`
-
 	// The PathSpec to use
 	*helpers.PathSpec `json:"-"`
 
