@@ -2,7 +2,6 @@ package converter
 
 import (
 	"bytes"
-	"github.com/spf13/afero"
 	"github.com/sunwei/hugo-playground/config"
 	"github.com/sunwei/hugo-playground/identity"
 	"github.com/sunwei/hugo-playground/markup/converter/hooks"
@@ -53,8 +52,7 @@ type DocumentContext struct {
 type ProviderConfig struct {
 	MarkupConfig markup_config.Config
 
-	Cfg       config.Provider // Site config
-	ContentFs afero.Fs
+	Cfg config.Provider // Site config
 	highlight.Highlighter
 }
 

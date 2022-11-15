@@ -22,8 +22,7 @@ func NewContentSpec(cfg config.Provider, contentFs afero.Fs) (*ContentSpec, erro
 
 	// markdown
 	converterProvider, err := markup.NewConverterProvider(converter.ProviderConfig{
-		Cfg:       cfg,
-		ContentFs: contentFs,
+		Cfg: cfg,
 	})
 	if err != nil {
 		return nil, err
