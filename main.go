@@ -10,9 +10,9 @@ import (
 func main() {
 	contentSpec, _ := helpers.NewContentSpec()
 
-	cp := contentSpec.Converters.Get("goldmark")
+	provider := contentSpec.Converters.Get("goldmark")
 
-	cpp, _ := cp.New(
+	goldmarkConverter, _ := provider.New(
 		converter.DocumentContext{
 			Document:     nil,
 			DocumentID:   "id",
@@ -20,16 +20,14 @@ func main() {
 			Filename:     "filename",
 		})
 
-	src := "### first blog\nHello Blog"
-	r, _ := cpp.Convert(
+	r, _ := goldmarkConverter.Convert(
 		converter.RenderContext{
-			Src:       []byte(src),
-			RenderTOC: false,
+			Src:       []byte("### first blog\nHello Blog\n### first section"),
+			RenderTOC: true,
 			GetRenderer: func(tp hooks.RendererType, id any) any {
 				return nil
 			},
 		})
 
 	fmt.Println(r)
-
 }
