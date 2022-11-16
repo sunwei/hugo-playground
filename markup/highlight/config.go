@@ -5,7 +5,6 @@ import (
 	"github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/cast"
-	"github.com/sunwei/hugo-playground/config"
 	"github.com/sunwei/hugo-playground/markup/converter/hooks"
 	"strconv"
 	"strings"
@@ -57,36 +56,6 @@ var DefaultConfig = Config{
 	NoClasses:          true,
 	LineNumbersInTable: true,
 	TabWidth:           4,
-}
-
-// ApplyLegacyConfig applies legacy config from back when we had
-// Pygments.
-func ApplyLegacyConfig(cfg config.Provider, conf *Config) error {
-	if conf.Style == DefaultConfig.Style {
-		if s := cfg.GetString("pygmentsStyle"); s != "" {
-			conf.Style = s
-		}
-	}
-
-	if conf.NoClasses == DefaultConfig.NoClasses && cfg.IsSet("pygmentsUseClasses") {
-		conf.NoClasses = !cfg.GetBool("pygmentsUseClasses")
-	}
-
-	if conf.CodeFences == DefaultConfig.CodeFences && cfg.IsSet("pygmentsCodeFences") {
-		conf.CodeFences = cfg.GetBool("pygmentsCodeFences")
-	}
-
-	if conf.GuessSyntax == DefaultConfig.GuessSyntax && cfg.IsSet("pygmentsCodefencesGuessSyntax") {
-		conf.GuessSyntax = cfg.GetBool("pygmentsCodefencesGuessSyntax")
-	}
-
-	if cfg.IsSet("pygmentsOptions") {
-		if err := applyOptionsFromString(cfg.GetString("pygmentsOptions"), conf); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func applyOptionsFromString(opts string, cfg *Config) error {

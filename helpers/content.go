@@ -2,10 +2,7 @@ package helpers
 
 import (
 	"bytes"
-	"github.com/spf13/afero"
-	"github.com/sunwei/hugo-playground/config"
 	"github.com/sunwei/hugo-playground/markup"
-	"github.com/sunwei/hugo-playground/markup/converter"
 	"html/template"
 	"strings"
 	"unicode"
@@ -14,16 +11,13 @@ import (
 
 // NewContentSpec returns a ContentSpec initialized
 // with the appropriate fields from the given config.Provider.
-func NewContentSpec(cfg config.Provider, contentFs afero.Fs) (*ContentSpec, error) {
+func NewContentSpec() (*ContentSpec, error) {
 	spec := &ContentSpec{
 		summaryLength: 1000,
-		Cfg:           cfg,
 	}
 
 	// markdown
-	converterProvider, err := markup.NewConverterProvider(converter.ProviderConfig{
-		Cfg: cfg,
-	})
+	converterProvider, err := markup.NewConverterProvider()
 	if err != nil {
 		return nil, err
 	}
@@ -39,8 +33,6 @@ type ContentSpec struct {
 
 	// SummaryLength is the length of the summary that Hugo extracts from a content.
 	summaryLength int
-
-	Cfg config.Provider
 }
 
 func (c *ContentSpec) ResolveMarkup(in string) string {

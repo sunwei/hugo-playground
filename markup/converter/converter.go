@@ -2,7 +2,6 @@ package converter
 
 import (
 	"bytes"
-	"github.com/sunwei/hugo-playground/config"
 	"github.com/sunwei/hugo-playground/identity"
 	"github.com/sunwei/hugo-playground/markup/converter/hooks"
 	"github.com/sunwei/hugo-playground/markup/highlight"
@@ -52,7 +51,6 @@ type DocumentContext struct {
 type ProviderConfig struct {
 	MarkupConfig markup_config.Config
 
-	Cfg config.Provider // Site config
 	highlight.Highlighter
 }
 

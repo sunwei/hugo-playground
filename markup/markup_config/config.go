@@ -1,7 +1,6 @@
 package markup_config
 
 import (
-	"github.com/sunwei/hugo-playground/config"
 	"github.com/sunwei/hugo-playground/markup/asciidocext/asciidocext_config"
 	"github.com/sunwei/hugo-playground/markup/goldmark/goldmark_config"
 	"github.com/sunwei/hugo-playground/markup/highlight"
@@ -22,7 +21,7 @@ type Config struct {
 	AsciidocExt asciidocext_config.Config
 }
 
-func Decode(cfg config.Provider) (conf Config, err error) {
+func Decode() (conf Config, err error) {
 	return Default, nil
 }
 

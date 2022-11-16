@@ -14,23 +14,22 @@ type ConverterProvider interface {
 	GetHighlighter() highlight.Highlighter
 }
 
-func NewConverterProvider(cfg converter.ProviderConfig) (ConverterProvider, error) {
+func NewConverterProvider() (ConverterProvider, error) {
 	converters := make(map[string]converter.Provider)
 
-	markupConfig, err := markup_config.Decode(cfg.Cfg)
+	markupConfig, err := markup_config.Decode()
 	if err != nil {
 		return nil, err
 	}
 
-	if cfg.Highlighter == nil {
-		cfg.Highlighter = highlight.New(markupConfig.Highlight)
+	cpc := converter.ProviderConfig{
+		MarkupConfig: markupConfig,
+		Highlighter:  highlight.New(markupConfig.Highlight),
 	}
 
-	cfg.MarkupConfig = markupConfig
-	defaultHandler := cfg.MarkupConfig.DefaultMarkdownHandler
-
+	defaultHandler := markupConfig.DefaultMarkdownHandler
 	add := func(p converter.ProviderProvider, aliases ...string) error {
-		c, err := p.New(cfg)
+		c, err := p.New(cpc)
 		if err != nil {
 			return err
 		}
@@ -53,7 +52,7 @@ func NewConverterProvider(cfg converter.ProviderConfig) (ConverterProvider, erro
 	}
 
 	return &converterRegistry{
-		config:     cfg,
+		config:     cpc,
 		converters: converters,
 	}, nil
 }
