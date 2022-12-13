@@ -71,6 +71,7 @@ func indexTagEnd(s []byte, tag []byte) int {
 var transitionFunc = [...]func(context, []byte) (context, int){
 	stateText:   tText,
 	stateRCDATA: tSpecialTagEnd,
+	stateTag:    tTag,
 }
 
 var commentStart = []byte("<!--")
@@ -103,6 +104,97 @@ func tText(c context, s []byte) (context, int) {
 		}
 		k = j
 	}
+}
+
+// tTag is the context transition function for the tag state.
+func tTag(c context, s []byte) (context, int) {
+	// Find the attribute name.
+	i := eatWhiteSpace(s, 0)
+	if i == len(s) {
+		return c, len(s)
+	}
+	if s[i] == '>' {
+		return context{
+			state:   elementContentType[c.element],
+			element: c.element,
+		}, i + 1
+	}
+	j, err := eatAttrName(s, i)
+	if err != nil {
+		return context{state: stateError, err: err}, len(s)
+	}
+	state, attr := stateTag, attrNone
+	if i == j {
+		return context{
+			state: stateError,
+			err:   errorf(ErrBadHTML, nil, 0, "expected space, attr name, or end of tag, but got %q", s[i:]),
+		}, len(s)
+	}
+
+	attrName := strings.ToLower(string(s[i:j]))
+	if c.element == elementScript && attrName == "type" {
+		attr = attrScriptType
+	} else {
+		switch attrType(attrName) {
+		case contentTypeURL:
+			attr = attrURL
+		case contentTypeCSS:
+			attr = attrStyle
+		case contentTypeJS:
+			attr = attrScript
+		case contentTypeSrcset:
+			attr = attrSrcset
+		}
+	}
+
+	if j == len(s) {
+		state = stateAttrName
+	} else {
+		state = stateAfterName
+	}
+	return context{state: state, element: c.element, attr: attr}, j
+}
+
+// eatAttrName returns the largest j such that s[i:j] is an attribute name.
+// It returns an error if s[i:] does not look like it begins with an
+// attribute name, such as encountering a quote mark without a preceding
+// equals sign.
+func eatAttrName(s []byte, i int) (int, *Error) {
+	for j := i; j < len(s); j++ {
+		switch s[j] {
+		case ' ', '\t', '\n', '\f', '\r', '=', '>':
+			return j, nil
+		case '\'', '"', '<':
+			// These result in a parse warning in HTML5 and are
+			// indicative of serious problems if seen in an attr
+			// name in a template.
+			return -1, errorf(ErrBadHTML, nil, 0, "%q in attribute name: %.32q", s[j:j+1], s)
+		default:
+			// No-op.
+		}
+	}
+	return len(s), nil
+}
+
+var elementContentType = [...]state{
+	elementNone:     stateText,
+	elementScript:   stateJS,
+	elementStyle:    stateCSS,
+	elementTextarea: stateRCDATA,
+	elementTitle:    stateRCDATA,
+}
+
+// eatWhiteSpace returns the largest j such that s[i:j] is white space.
+func eatWhiteSpace(s []byte, i int) int {
+	for j := i; j < len(s); j++ {
+		switch s[j] {
+		case ' ', '\t', '\n', '\f', '\r':
+			// No-op.
+		default:
+			return j
+		}
+	}
+	return len(s)
 }
 
 var elementNameMap = map[string]element{

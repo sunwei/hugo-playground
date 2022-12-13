@@ -80,6 +80,7 @@ Hello Blog
 {{ $entries := (readDir ".") }}
 START:|{{ range $entry := $entries }}{{ if not $entry.IsDir }}{{ $entry.Name }}|{{ end }}{{ end }}:END:
 -- layouts/_default/single.html --
+<p>hello single page</p>
 {{ .Content }}
 ===
 Static Content

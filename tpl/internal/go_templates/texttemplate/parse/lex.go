@@ -134,6 +134,8 @@ func (l *lexer) next() rune {
 		return eof
 	}
 	r, w := utf8.DecodeRuneInString(l.input[l.pos:])
+	fmt.Println(string(r))
+	fmt.Println(w)
 	l.width = Pos(w)
 	l.pos += l.width
 	if r == '\n' {
@@ -252,14 +254,18 @@ func lexText(l *lexer) stateFn {
 	l.width = 0
 	if x := strings.Index(l.input[l.pos:], l.leftDelim); x >= 0 {
 		ldn := Pos(len(l.leftDelim))
+		fmt.Println(ldn)
 		l.pos += Pos(x)
+		fmt.Println(l.pos)
 		trimLength := Pos(0)
 		if hasLeftTrimMarker(l.input[l.pos+ldn:]) {
 			trimLength = rightTrimLength(l.input[l.start:l.pos])
+			fmt.Println(trimLength)
 		}
 		l.pos -= trimLength
 		if l.pos > l.start {
 			l.line += strings.Count(l.input[l.start:l.pos], "\n")
+			fmt.Println(l.line)
 			l.emit(itemText)
 		}
 		l.pos += trimLength
@@ -268,6 +274,8 @@ func lexText(l *lexer) stateFn {
 	}
 	l.pos = Pos(len(l.input))
 	// Correctly reached EOF.
+	fmt.Println(l.pos)
+	fmt.Println(l.start)
 	if l.pos > l.start {
 		l.line += strings.Count(l.input[l.start:l.pos], "\n")
 		l.emit(itemText)
@@ -302,11 +310,15 @@ func lexLeftDelim(l *lexer) stateFn {
 	l.pos += Pos(len(l.leftDelim))
 	trimSpace := hasLeftTrimMarker(l.input[l.pos:])
 	afterMarker := Pos(0)
+	fmt.Println(afterMarker)
 	if trimSpace {
 		afterMarker = trimMarkerLen
 	}
+	fmt.Println(afterMarker)
 	if strings.HasPrefix(l.input[l.pos+afterMarker:], leftComment) {
+		fmt.Println("has left comment")
 		l.pos += afterMarker
+		fmt.Println(l.pos)
 		l.ignore()
 		return lexComment
 	}
@@ -326,6 +338,9 @@ func lexComment(l *lexer) stateFn {
 	}
 	l.pos += Pos(i + len(rightComment))
 	delim, trimSpace := l.atRightDelim()
+	fmt.Println(delim)
+	fmt.Println(trimSpace)
+
 	if !delim {
 		return l.errorf("comment ends before closing delimiter")
 	}
@@ -365,6 +380,7 @@ func lexInsideAction(l *lexer) stateFn {
 	// Spaces separate arguments; runs of spaces turn into itemSpace.
 	// Pipe symbols separate and are emitted.
 	delim, _ := l.atRightDelim()
+	fmt.Println(delim)
 	if delim {
 		if l.parenDepth == 0 {
 			return lexRightDelim
@@ -404,9 +420,11 @@ func lexInsideAction(l *lexer) stateFn {
 		}
 		fallthrough // '.' can start a number.
 	case r == '+' || r == '-' || ('0' <= r && r <= '9'):
+		fmt.Println("???")
 		l.backup()
 		return lexNumber
 	case isAlphaNumeric(r):
+		fmt.Println("?")
 		l.backup()
 		return lexIdentifier
 	case r == '(':
@@ -419,6 +437,7 @@ func lexInsideAction(l *lexer) stateFn {
 			return l.errorf("unexpected right paren %#U", r)
 		}
 	case r <= unicode.MaxASCII && unicode.IsPrint(r):
+		fmt.Println("??")
 		l.emit(itemChar)
 	default:
 		return l.errorf("unrecognized character in action: %#U", r)
@@ -458,10 +477,13 @@ Loop:
 	for {
 		switch r := l.next(); {
 		case isAlphaNumeric(r):
+			fmt.Printf("-- %s\n", string(r))
 			// absorb.
 		default:
 			l.backup()
 			word := l.input[l.start:l.pos]
+			fmt.Println("--==--")
+			fmt.Println(word)
 			if !l.atTerminator() {
 				return l.errorf("bad character %#U", r)
 			}
@@ -478,6 +500,7 @@ Loop:
 			case word == "true", word == "false":
 				l.emit(itemBool)
 			default:
+				fmt.Println("i identifier...")
 				l.emit(itemIdentifier)
 			}
 			break Loop
